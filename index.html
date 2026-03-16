@@ -710,5 +710,13 @@ setInterval(function(){
     location.reload();
 }, 300000);
 </script>
+  <script>
+var password = "Crest@2026";   // change password here
+var input = prompt("Enter Crest Dashboard Password");
+
+if(input !== password){
+    document.body.innerHTML = "<h2>Access Denied</h2>";
+}
+</script>
 </body>
 </html>
