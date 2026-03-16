@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Crest Property — Ops Accountability Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f0ed;color:#1a1a18;font-size:13px;line-height:1.5}
+
+/* ── TOP BAR ── */
+.topbar{background:#1a1a18;color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;gap:12px;flex-wrap:wrap}
+.topbar-left h1{font-size:15px;font-weight:600}
+.topbar-left p{font-size:11px;color:#888780;margin-top:2px}
+.topbar-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.nav-pill{padding:5px 14px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid #444;background:transparent;color:#ccc;transition:all .15s}
+.nav-pill.active{background:#fff;color:#1a1a18;border-color:#fff;font-weight:600}
+.live-badge{display:flex;align-items:center;gap:5px;font-size:11px;color:#9FE1CB;font-weight:500}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#1D9E75;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.refresh-btn{padding:4px 12px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid #444;background:transparent;color:#ccc}
+.refresh-btn:hover{background:#333}
+
+/* ── LOADING / ERROR STATES ── */
+.state-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;text-align:center;padding:24px}
+.state-screen h2{font-size:18px;font-weight:600}
+.state-screen p{font-size:13px;color:#73726c;max-width:480px;line-height:1.6}
+.spinner{width:36px;height:36px;border:3px solid #e5e4dd;border-top-color:#1a73e8;border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.setup-box{background:#fff;border-radius:12px;padding:24px;max-width:560px;border:1px solid #e5e4dd;text-align:left}
+.setup-box h3{font-size:15px;font-weight:700;margin-bottom:12px}
+.setup-box ol{padding-left:18px;font-size:13px;line-height:2;color:#444}
+.setup-box code{background:#f1efe8;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px;color:#185FA5}
+.url-input{width:100%;margin-top:12px;padding:10px 12px;border:1px solid #d3d1c7;border-radius:8px;font-size:13px;font-family:monospace}
+.save-btn{margin-top:8px;padding:8px 20px;background:#1a73e8;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600}
+
+/* ── VIEWS ── */
+.view{display:none;padding:20px 24px}.view.active{display:block}
+
+/* ── LAST UPDATED BAR ── */
+.update-bar{background:#EAF3DE;border-radius:8px;padding:8px 14px;font-size:12px;color:#3B6D11;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.update-bar b{font-weight:700}
+
+/* ── SCORECARDS ── */
+.scorecards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+.sc{background:#fff;border-radius:10px;padding:14px 16px;border-top:4px solid transparent;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.sc:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.09)}
+.sc.selected{box-shadow:0 0 0 2px #1a1a18;transform:translateY(-2px)}
+.sc .rank{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#73726c;margin-bottom:3px}
+.sc .sc-name{font-size:14px;font-weight:700;margin-bottom:8px}
+.sc .big{font-size:28px;font-weight:800;line-height:1}
+.sc .meta{font-size:11px;color:#73726c;margin-top:4px}
+.sc .site-pills{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
+.sc .sp{font-size:10px;padding:2px 6px;border-radius:3px;font-weight:600}
+
+/* ── PANEL ── */
+.ops-panel{display:none}.ops-panel.active{display:block}
+.panel-header{background:#fff;border-radius:12px;padding:18px 22px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.ph-name{font-size:22px;font-weight:800;margin-bottom:3px}
+.ph-sub{font-size:12px;color:#73726c}
+.ph-stats{display:flex;gap:24px;flex-wrap:wrap}
+.ph-stat .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#73726c}
+.ph-stat .val{font-size:20px;font-weight:800}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.card{background:#fff;border-radius:10px;padding:16px 18px;margin-bottom:0}
+.card h3{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#73726c;margin-bottom:12px}
+.cw{position:relative;width:100%;height:200px}
+
+/* ── ACTION BLOCKS ── */
+.action-blocks{display:grid;gap:10px;margin-bottom:14px}
+.ab{border-radius:10px;padding:16px 18px;border-left:4px solid transparent}
+.ab-zero{background:#FFF0F0;border-color:#791F1F}
+.ab-critical{background:#FFF5F5;border-color:#E24B4A}
+.ab-warning{background:#FFFBF2;border-color:#EF9F27}
+.ab-watch{background:#FFFFF2;border-color:#F9CB42}
+.ab-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.ab-title{font-weight:700;font-size:13px}
+.ab-count{font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px}
+.ab-zero .ab-count{background:#F7C1C1;color:#791F1F}
+.ab-critical .ab-count{background:#FCEBEB;color:#A32D2D}
+.ab-warning .ab-count{background:#FAEEDA;color:#854F0B}
+.ab-watch .ab-count{background:#FFF9E6;color:#633806}
+.action-list{list-style:none;font-size:12px;color:#333;margin-bottom:10px}
+.action-list li{padding:3px 0;display:flex;gap:7px;align-items:baseline}
+.action-list li::before{content:"→";font-weight:700;flex-shrink:0;color:#888}
+.site-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-size:11px;padding:4px 10px;border-radius:6px;font-weight:500;display:flex;align-items:center;gap:6px;line-height:1.3}
+.chip-zero{background:#F7C1C1;color:#791F1F}
+.chip-critical{background:#FCEBEB;color:#A32D2D}
+.chip-warning{background:#FAEEDA;color:#854F0B}
+.chip-watch{background:#FFF9E6;color:#633806}
+.chip-pct{font-weight:800}
+
+/* ── SITE TABLE ── */
+.site-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.site-tbl th{padding:7px 10px;border-bottom:1px solid #e5e4dd;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#73726c;text-align:left;background:#fafaf8;white-space:nowrap}
+.site-tbl td{padding:8px 10px;border-bottom:1px solid #f1efe8;vertical-align:middle}
+.site-tbl tr:last-child td{border-bottom:none}
+.site-tbl tr:hover td{background:#fafaf8}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:3px;font-weight:600;white-space:nowrap}
+.bz{background:#F7C1C1;color:#791F1F}.bc{background:#FCEBEB;color:#A32D2D}.bw{background:#FAEEDA;color:#854F0B}.bwt{background:#FFF9E6;color:#633806}.bg{background:#EAF3DE;color:#3B6D11}
+.bar-w{display:flex;align-items:center;gap:6px}
+.bar{flex:1;height:5px;background:#f1efe8;border-radius:3px;overflow:hidden;min-width:40px}
+.bar-f{height:100%;border-radius:3px}
+
+/* ── LEAGUE VIEW ── */
+.league-row{background:#fff;border-radius:10px;padding:14px 18px;margin-bottom:10px;display:grid;grid-template-columns:36px 1fr auto;gap:14px;align-items:center;cursor:pointer;transition:transform .1s,box-shadow .1s}
+.league-row:hover{transform:translateX(3px);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.lr-rank{font-size:20px;font-weight:800;color:#d3d1c7}
+.lr-name{font-size:15px;font-weight:700}
+.lr-meta{font-size:11px;color:#73726c;margin-top:2px}
+.lr-bar-row{display:flex;gap:3px;margin-top:8px;height:7px;border-radius:4px;overflow:hidden}
+.lr-seg{height:100%}
+.lr-pct{font-size:24px;font-weight:800;text-align:right}
+.lr-sub{font-size:10px;color:#73726c;text-align:right;margin-top:2px}
+
+/* ── COMPARE VIEW ── */
+.compare-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.cg{background:#fff;border-radius:10px;padding:14px}
+.cg-name{font-size:12px;font-weight:700;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cg-big{font-size:26px;font-weight:800;margin-bottom:4px}
+.cg-bar{height:5px;border-radius:3px;background:#f1efe8;margin-bottom:10px;overflow:hidden}
+.cg-fill{height:100%;border-radius:3px}
+.cg-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.cg-b{font-size:10px;padding:3px 5px;border-radius:4px;text-align:center;font-weight:700}
+
+.tw{overflow-x:auto}
+.section-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.section-hdr h2{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#73726c}
+
+@media(max-width:700px){
+  .scorecards,.compare-grid{grid-template-columns:1fr 1fr}
+  .two-col{grid-template-columns:1fr}
+  .topbar-right .nav-pill{font-size:11px;padding:4px 10px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ TOP BAR ═══ -->
+<div class="topbar">
+  <div class="topbar-left">
+    <h1>Crest Property — Ops Accountability Dashboard</h1>
+    <p id="topbar-sub">Loading live data…</p>
+  </div>
+  <div class="topbar-right">
+    <div class="live-badge"><span class="live-dot"></span> Live</div>
+    <button class="refresh-btn" onclick="loadData()">Refresh</button>
+    <button class="nav-pill active" onclick="showView('scorecard',this)">Scorecard</button>
+    <button class="nav-pill" onclick="showView('league',this)">League table</button>
+    <button class="nav-pill" onclick="showView('compare',this)">Compare</button>
+  </div>
+</div>
+
+<!-- ═══ LOADING SCREEN ═══ -->
+<div id="screen-loading" class="state-screen">
+  <div class="spinner"></div>
+  <h2>Loading live attendance data…</h2>
+  <p>Fetching today's report from Google Sheets</p>
+</div>
+
+<!-- ═══ SETUP SCREEN (shown when CSV_URL not configured) ═══ -->
+<div id="screen-setup" class="state-screen" style="display:none">
+  <div class="setup-box">
+    <h3>One-time setup — connect to your Google Sheet</h3>
+    <ol>
+      <li>Open your Google Sheet → <b>Apps Script</b></li>
+      <li>Run the function <code>getLiveFeedUrl()</code></li>
+      <li>Copy the URL from the Execution Log</li>
+      <li>Paste it below and click Save</li>
+    </ol>
+    <input class="url-input" id="url-input" placeholder="https://docs.google.com/spreadsheets/d/YOUR_ID/gviz/tq?tqx=out:csv&sheet=Live+Feed&gid=..." />
+    <br><button class="save-btn" onclick="saveUrl()">Save and load dashboard</button>
+    <p style="font-size:11px;color:#73726c;margin-top:10px">The URL is saved in your browser. You only do this once.</p>
+  </div>
+</div>
+
+<!-- ═══ ERROR SCREEN ═══ -->
+<div id="screen-error" class="state-screen" style="display:none">
+  <h2>Could not load data</h2>
+  <p id="error-msg">Check that your Google Sheet is published and the CSV URL is correct.</p>
+  <button class="save-btn" onclick="showSetup()">Update CSV URL</button>
+</div>
+
+<!-- ═══ MAIN DASHBOARD ═══ -->
+<div id="dashboard" style="display:none">
+
+  <!-- SCORECARD VIEW -->
+  <div class="view active" id="v-scorecard">
+    <div id="update-bar-sc"></div>
+    <div class="scorecards" id="sc-row"></div>
+    <div id="ops-panels"></div>
+  </div>
+
+  <!-- LEAGUE VIEW -->
+  <div class="view" id="v-league">
+    <div id="update-bar-lg"></div>
+    <div class="section-hdr"><h2>Ops managers — ranked by MTD attendance</h2></div>
+    <div id="league-rows"></div>
+    <div class="card" style="margin-top:14px">
+      <h3>All ops managers — attendance trend</h3>
+      <div style="position:relative;width:100%;height:260px"><canvas id="all-trend-chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- COMPARE VIEW -->
+  <div class="view" id="v-compare">
+    <div id="update-bar-cp"></div>
+    <div class="section-hdr"><h2>Side-by-side comparison</h2></div>
+    <div class="compare-grid" id="compare-cards"></div>
+    <div class="card">
+      <h3>Site status breakdown per ops manager</h3>
+      <div style="position:relative;width:100%;height:280px"><canvas id="stack-chart"></canvas></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>All sites needing action — grouped by ops manager</h3>
+      <div class="tw" id="compare-table"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// CONFIG — paste your CSV URL here OR use the setup screen
+// ═══════════════════════════════════════════════════════
+var CSV_URL = "https://docs.google.com/spreadsheets/d/1ELDFDoc0q7ZeIX3zeSs8nuEVo7eypa7_NjiIurlZD10/gviz/tq?tqx=out:csv&sheet=Live%20Feed&gid=637992924";
+// Example: "https://docs.google.com/spreadsheets/d/1abc.../gviz/tq?tqx=out:csv&sheet=Live+Feed&gid=123456"
+
+var AUTO_REFRESH_MINUTES = 30; // refresh every 30 min automatically
+
+// ═══════════════════════════════════════════════════════
+// STATIC FALLBACK (last known data — used if sheet unreachable)
+// Replace with empty object {} to force live-only mode
+// ═══════════════════════════════════════════════════════
+var FALLBACK = {
+  report_date:"2026-03-13", overall_pct:84, overall_present:1470, overall_deploy:1741,
+  ops:{
+    "Deepak":{pct:96,present:380,deploy:396},
+    "Neeru":{pct:86,present:269,deploy:312},
+    "Prashant Sonavane":{pct:79,present:182,deploy:231},
+    "Raees":{pct:83,present:363,deploy:436},
+    "Sandeep":{pct:74,present:271,deploy:366}
+  },
+  sites:[{"site": "72 EMPIRE", "present": 8, "deploy": 11, "pct": 72.73, "cat": "avg", "ops": "Sandeep"}, {"site": "72 EMPIRE (FDE)", "present": 3, "deploy": 4, "pct": 75.0, "cat": "avg", "ops": "Sandeep"}, {"site": "AANGAN BUILDING", "present": 15, "deploy": 20, "pct": 75.0, "cat": "avg", "ops": "Neeru"}, {"site": "ADEN - SAI DARSHAN", "present": 1, "deploy": 1, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "ADEN SALES OFFICE", "present": 3, "deploy": 5, "pct": 60.0, "cat": "low", "ops": "Sandeep"}, {"site": "Aeka Advisors India LLP", "present": 1, "deploy": 1, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "AKASHDEEP BUNGALOW", "present": 1, "deploy": 8, "pct": 12.5, "cat": "low", "ops": "Prashant Sonavane"}, {"site": "ALEMBIC LIMITED (ficus Court)", "present": 9, "deploy": 12, "pct": 75.0, "cat": "avg", "ops": "Sandeep"}, {"site": "Applaud 38", "present": 40, "deploy": 39, "pct": 102.56, "cat": "high", "ops": "Prashant Sonavane"}, {"site": "Ashiana / Ocean Vista Sales Office", "present": 0, "deploy": 1, "pct": 0.0, "cat": "low", "ops": "Sandeep"}, {"site": "ASHIANA PROJECT", "present": 1, "deploy": 1, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "ASHIANA SALES OFFICE", "present": 3, "deploy": 3, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "ASHIKA STOCK BROKING LTD", "present": 18, "deploy": 22, "pct": 81.82, "cat": "avg", "ops": "Sandeep"}, {"site": "ATUL PROJECTS", "present": 27, "deploy": 28, "pct": 96.43, "cat": "high", "ops": "Sandeep"}, {"site": "AVENUE D1 PROJECT OFFICE", "present": 1, "deploy": 1, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "BASANT PARK BALMORAL PROJECT OFFICE", "present": 2, "deploy": 2, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "BASANT PARK SALES OFFICE", "present": 8, "deploy": 9, "pct": 88.89, "cat": "avg", "ops": "Sandeep"}, {"site": "BELLA PMS", "present": 37, "deploy": 39, "pct": 94.87, "cat": "high", "ops": "Neeru"}, {"site": "BHILOSA INDUSTRIES PVT LTD", "present": 15, "deploy": 15, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "BHILOSA UNIT 2 NAROLI", "present": 0, "deploy": 28, "pct": 0.0, "cat": "low", "ops": "Sandeep"}, {"site": "CEC SALES OFFICE- THANE", "present": 11, "deploy": 22, "pct": 50.0, "cat": "low", "ops": "Sandeep"}, {"site": "CELIO RETAIL PRIVATE LIMITED", "present": 1, "deploy": 2, "pct": 50.0, "cat": "low", "ops": "Sandeep"}, {"site": "CENTRAL PARK", "present": 32, "deploy": 32, "pct": 100.0, "cat": "high", "ops": "Neeru"}, {"site": "CENTRAL PARK 8TH FLOOR", "present": 1, "deploy": 1, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "CLEON PROJECT OFFICE", "present": 1, "deploy": 1, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "CONSTRUCTION OFFICE-CO", "present": 4, "deploy": 6, "pct": 66.67, "cat": "low", "ops": "Sandeep"}, {"site": "Corporate Avenue - Andheri", "present": 26, "deploy": 31, "pct": 83.87, "cat": "avg", "ops": "Prashant Sonavane"}, {"site": "CRESCENT SALES", "present": 5, "deploy": 6, "pct": 83.33, "cat": "avg", "ops": "Sandeep"}, {"site": "CRESENT PROJECT", "present": 2, "deploy": 2, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "CROWN PROJECT", "present": 3, "deploy": 6, "pct": 50.0, "cat": "low", "ops": "Sandeep"}, {"site": "CROWN PROJECT OFFICE", "present": 2, "deploy": 3, "pct": 66.67, "cat": "low", "ops": "Sandeep"}, {"site": "CROWN SALES - PMS", "present": 227, "deploy": 229, "pct": 99.13, "cat": "large", "ops": "Deepak"}, {"site": "CROWN SALES OFFICE", "present": 16, "deploy": 18, "pct": 88.89, "cat": "avg", "ops": "Sandeep"}, {"site": "DAKLE INDUSTRIAL PLASTIC", "present": 2, "deploy": 2, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "DOSTI OAK (DOSTI WEST COUNTY) CHS", "present": 18, "deploy": 27, "pct": 66.67, "cat": "low", "ops": "Raees"}, {"site": "dummy", "present": 14, "deploy": 16, "pct": 87.5, "cat": "avg", "ops": "Sandeep"}, {"site": "ELEMENTS SALES", "present": 104, "deploy": 122, "pct": 85.25, "cat": "large", "ops": "Neeru"}, {"site": "ESTORIA  SALES OFFICE(Porta Cabin Wadala)", "present": 0, "deploy": 2, "pct": 0.0, "cat": "low", "ops": "Sandeep"}, {"site": "GANGA JAMUNA COOPERATIVE HOUSING SOCIETY LIMITED", "present": 10, "deploy": 13, "pct": 76.92, "cat": "avg", "ops": "Neeru"}, {"site": "GARDEN 6 PMS", "present": 4, "deploy": 7, "pct": 57.14, "cat": "low", "ops": "Neeru"}, {"site": "Grand Pallazo", "present": 12, "deploy": 14, "pct": 85.71, "cat": "avg", "ops": "Raees"}, {"site": "GURUKRUPA REALCOM INFRASTRUCTURE DEVELOPERS", "present": 25, "deploy": 25, "pct": 100.0, "cat": "high", "ops": "Prashant Sonavane"}, {"site": "HORIZON BHANDUP", "present": 4, "deploy": 4, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "Horizon Bhandup PMS", "present": 17, "deploy": 24, "pct": 70.83, "cat": "avg", "ops": "Prashant Sonavane"}, {"site": "INGEVITY INDIA PRIVATE LIMITED", "present": 1, "deploy": 1, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "JARIWALA SALES OFFICE (OM GALAXY)", "present": 9, "deploy": 10, "pct": 90.0, "cat": "high", "ops": "Sandeep"}, {"site": "Kasara construction Office", "present": 1, "deploy": 2, "pct": 50.0, "cat": "low", "ops": "Sandeep"}, {"site": "KASARA SALES OFFICE", "present": 3, "deploy": 3, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "KEY INTERIORS - PROJECT OFFICE", "present": 1, "deploy": 1, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "KEYHEIGHT REALTORS PRIVATE LIMITED (CLIFF PROJECT)", "present": 1, "deploy": 1, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "LA REVE", "present": 1, "deploy": 1, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "LA VIE", "present": 0, "deploy": 2, "pct": 0.0, "cat": "low", "ops": "Sandeep"}, {"site": "LA. FONTAINE - PMS", "present": 13, "deploy": 13, "pct": 100.0, "cat": "high", "ops": "Neeru"}, {"site": "LABOUR CAMP", "present": 3, "deploy": 4, "pct": 75.0, "cat": "avg", "ops": "Sandeep"}, {"site": "LA-FAMILIA", "present": 0, "deploy": 2, "pct": 0.0, "cat": "low", "ops": "Sandeep"}, {"site": "LIASONING", "present": 1, "deploy": 1, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "MAYFAIR THE VIEW", "present": 9, "deploy": 10, "pct": 90.0, "cat": "high", "ops": "Sandeep"}, {"site": "Midtown Promesa", "present": 12, "deploy": 20, "pct": 60.0, "cat": "low", "ops": "Prashant Sonavane"}, {"site": "NAMAN HABITAT", "present": 2, "deploy": 2, "pct": 100.0, "cat": "high", "ops": "Neeru"}, {"site": "NAMAN HABITAT POSSESSION", "present": 1, "deploy": 1, "pct": 100.0, "cat": "high", "ops": "Neeru"}, {"site": "NAMAN PREMIER E-WING", "present": 1, "deploy": 1, "pct": 100.0, "cat": "high", "ops": "Neeru"}, {"site": "NATRAJ", "present": 9, "deploy": 10, "pct": 90.0, "cat": "high", "ops": "Sandeep"}, {"site": "NATRAJ - 4TH FLOOR", "present": 10, "deploy": 9, "pct": 111.11, "cat": "high", "ops": "Sandeep"}, {"site": "NATRAJ (FDE)", "present": 6, "deploy": 6, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "NEWA BHAKTI KNOWLEDGE CITY", "present": 33, "deploy": 40, "pct": 82.5, "cat": "avg", "ops": "Raees"}, {"site": "PALI PARISHRAM -PMS SITE", "present": 17, "deploy": 21, "pct": 80.95, "cat": "avg", "ops": "Neeru"}, {"site": "PALI PARISHRAM PROJECT OFFICE", "present": 2, "deploy": 2, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "PARAMOUNT PROJECT OFFICE", "present": 2, "deploy": 2, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "PARAMOUNT REHAB PROJECT OFFICE", "present": 1, "deploy": 1, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "PARAMOUNT SALES", "present": 102, "deploy": 122, "pct": 83.61, "cat": "large", "ops": "Raees"}, {"site": "PARAMOUNT SALES OFFICE", "present": 2, "deploy": 2, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "PARKMIST", "present": 13, "deploy": 14, "pct": 92.86, "cat": "high", "ops": "Raees"}, {"site": "PIRAMAL REALTY- LOWER PAREL", "present": 8, "deploy": 9, "pct": 88.89, "cat": "avg", "ops": "Sandeep"}, {"site": "PRIVE PROJECT OFFICE", "present": 1, "deploy": 1, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "PRIVE SALES OFFICE", "present": 3, "deploy": 3, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "RAJSHREE POLYPACK LTD (UNIT - II)", "present": 9, "deploy": 13, "pct": 69.23, "cat": "low", "ops": "Sandeep"}, {"site": "Registration office Worli", "present": 0, "deploy": 1, "pct": 0.0, "cat": "low", "ops": "Sandeep"}, {"site": "RESERVE SALES OFFICE", "present": 3, "deploy": 3, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "Reserve Society", "present": 31, "deploy": 37, "pct": 83.78, "cat": "avg", "ops": "Raees"}, {"site": "Runwal Bliss Club house", "present": 13, "deploy": 20, "pct": 65.0, "cat": "low", "ops": "Prashant Sonavane"}, {"site": "Runwal fifth Avenue", "present": 5, "deploy": 7, "pct": 71.43, "cat": "avg", "ops": "Prashant Sonavane"}, {"site": "RUNWAL FORESTS TOWERS CO-OP HOUSING LTD", "present": 16, "deploy": 21, "pct": 76.19, "cat": "avg", "ops": "Neeru"}, {"site": "Runwal Garden Heights (BCAM)", "present": 4, "deploy": 9, "pct": 44.44, "cat": "low", "ops": "Prashant Sonavane"}, {"site": "RUSTOMJEE AURELIA -1 CO-OPERATIVE HOUSING SOCIETY", "present": 3, "deploy": 12, "pct": 25.0, "cat": "low", "ops": "Deepak"}, {"site": "RUSTOMJEE AZZIANO CHS LTD", "present": 150, "deploy": 155, "pct": 96.77, "cat": "large", "ops": "Deepak"}, {"site": "RUSTOMJEE BELLA SALES", "present": 1, "deploy": 2, "pct": 50.0, "cat": "low", "ops": "Sandeep"}, {"site": "RUSTOMJEE BELLE-VIE KASARA SALES OFFICE", "present": 4, "deploy": 4, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "RUSTOMJEE ERIKA PMS", "present": 24, "deploy": 31, "pct": 77.42, "cat": "avg", "ops": "Prashant Sonavane"}, {"site": "Rustomjee Estoria wadala", "present": 2, "deploy": 2, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "Rustomjee GTB Nagar Project", "present": 1, "deploy": 1, "pct": 100.0, "cat": "high", "ops": "Prashant Sonavane"}, {"site": "RUSTOMJEE SEASONS - D WING PROJECT", "present": 10, "deploy": 13, "pct": 76.92, "cat": "avg", "ops": "Raees"}, {"site": "Rustomjee Yazarina 03", "present": 4, "deploy": 7, "pct": 57.14, "cat": "low", "ops": "Neeru"}, {"site": "SAGAR TARANG - VERSOVA", "present": 1, "deploy": 1, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "SEASONS SALES - PMS", "present": 94, "deploy": 118, "pct": 79.66, "cat": "large", "ops": "Raees"}, {"site": "SIMSON PHARMA LTD", "present": 2, "deploy": 3, "pct": 66.67, "cat": "low", "ops": "Sandeep"}, {"site": "Social Housing Project", "present": 0, "deploy": 1, "pct": 0.0, "cat": "low", "ops": "Sandeep"}, {"site": "STELLA PROJECT OFFICE", "present": 1, "deploy": 2, "pct": 50.0, "cat": "low", "ops": "Sandeep"}, {"site": "STELLA SALES OFFICE", "present": 1, "deploy": 2, "pct": 50.0, "cat": "low", "ops": "Sandeep"}, {"site": "SUMMIT (VALET)", "present": 0, "deploy": 5, "pct": 0.0, "cat": "low", "ops": "Sandeep"}, {"site": "SUMMIT SALES - PMS", "present": 50, "deploy": 51, "pct": 98.04, "cat": "high", "ops": "Raees"}, {"site": "TELE CALLER OFFICE", "present": 1, "deploy": 2, "pct": 50.0, "cat": "low", "ops": "Sandeep"}, {"site": "THE PALACIMO CO OP HSG SOCIETY LTD", "present": 3, "deploy": 3, "pct": 100.0, "cat": "high", "ops": "Neeru"}, {"site": "VERDANT VISTAS", "present": 2, "deploy": 2, "pct": 100.0, "cat": "high", "ops": "Sandeep"}, {"site": "WaterFront Tower Private Limited", "present": 14, "deploy": 16, "pct": 87.5, "cat": "avg", "ops": "Prashant Sonavane"}, {"site": "WIPRO WATER -AIROLI", "present": 4, "deploy": 5, "pct": 80.0, "cat": "avg", "ops": "Sandeep"}, {"site": "YAZARINA ONE CHS LIMITED - RUSTOMJEE", "present": 5, "deploy": 5, "pct": 100.0, "cat": "high", "ops": "Neeru"}, {"site": "ZINNIA", "present": 5, "deploy": 5, "pct": 100.0, "cat": "high", "ops": "Neeru"}]
+};
+
+// ═══════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════
+var OPS_NAMES = ['Deepak','Neeru','Raees','Prashant Sonavane','Sandeep'];
+var OPS_COLORS = {'Deepak':'#3B6D11','Neeru':'#185FA5','Raees':'#854F0B','Prashant Sonavane':'#7F77DD','Sandeep':'#993556'};
+var ACTIONS = {
+  zero:     {label:'Zero attendance — immediate escalation', cls:'zero', color:'#791F1F',
+    steps:['Call site supervisor immediately','Confirm if site is operational','Document reason and escalate to regional head','Update system with reason code']},
+  critical: {label:'Critical — below 65%', cls:'critical', color:'#A32D2D',
+    steps:['Escalate to site manager & HR today','Mandatory daily check-in call until resolved','Root cause analysis submitted within 24 hours','Corrective action plan with timeline required']},
+  warning:  {label:'Warning — 65% to 75%', cls:'warning', color:'#854F0B',
+    steps:['Notify site manager formally in writing','Bi-daily attendance review for next 7 days','Issue warning notice to site supervisor','Corrective action plan within 48 hours']},
+  watch:    {label:'Watch — 75% to 85%', cls:'watch', color:'#633806',
+    steps:['Flag to site supervisor — target 85%+','Weekly review for next 2 weeks','Monitor daily — escalate if drops below 75%']}
+};
+
+function gc(p){if(p===0)return'#791F1F';if(p<65)return'#E24B4A';if(p<75)return'#EF9F27';if(p<85)return'#F9CB42';return'#639922';}
+function gst(p){return p===0?'zero':p<65?'critical':p<75?'warning':p<85?'watch':'good';}
+function bl(s){return{zero:'bz',critical:'bc',warning:'bw',watch:'bwt',good:'bg'}[s]||'bg';}
+function sl(s){return{zero:'Zero',critical:'Critical',warning:'Warning',watch:'Watch',good:'Good'}[s]||s;}
+
+var chartInst = {};
+var liveData = null;
+var activeOps = 'Sandeep';
+
+// ═══════════════════════════════════════════════════════
+// DATA LOADING
+// ═══════════════════════════════════════════════════════
+function getStoredUrl() {
+  try { return localStorage.getItem('crest_csv_url') || CSV_URL; } catch(e) { return CSV_URL; }
+}
+function saveUrl() {
+  var url = document.getElementById('url-input').value.trim();
+  if (!url || url === 'YOUR_CSV_URL_HERE') { alert('Please paste a valid URL'); return; }
+  try { localStorage.setItem('crest_csv_url', url); } catch(e) {}
+  CSV_URL = url;
+  loadData();
+}
+function showSetup() {
+  hide('screen-loading'); hide('screen-error'); hide('dashboard');
+  show('screen-setup');
+  var stored = getStoredUrl();
+  if (stored && stored !== 'YOUR_CSV_URL_HERE') document.getElementById('url-input').value = stored;
+}
+
+function loadData() {
+  var url = getStoredUrl();
+  if (!url || url === 'YOUR_CSV_URL_HERE') { showSetup(); return; }
+
+  hide('screen-setup'); hide('screen-error'); hide('dashboard');
+  show('screen-loading');
+
+  // Add cache-bust
+  var fetchUrl = url + (url.includes('?') ? '&' : '?') + '_cb=' + Date.now();
+
+  var proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(fetchUrl);
+  fetch(proxyUrl)
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+    .then(function(csv){ parseCsvAndRender(csv); })
+    .catch(function(e){
+      console.warn('Proxy failed, trying direct fetch:', e);
+      fetch(fetchUrl)
+        .then(function(r){ return r.text(); })
+        .then(function(csv){ parseCsvAndRender(csv); })
+        .catch(function(e2){
+          console.warn('Direct fetch also failed, using real fallback data:', e2);
+          renderDashboard(FALLBACK, false);
+        });
+    });
+}
+
+function parseCsvAndRender(csv) {
+  try {
+    var lines = csv.split('\n').filter(function(l){return l.trim();});
+    var kv = {};
+    for (var i = 1; i < lines.length; i++) {
+      var parts = csvLineParts(lines[i]);
+      if (parts.length >= 2) kv[parts[0].trim()] = parts[1].trim();
+    }
+
+    var data = {
+      report_date:     kv['report_date']     || '',
+      overall_pct:     parseFloat(kv['overall_pct'])     || 0,
+      overall_present: parseInt(kv['overall_present'])   || 0,
+      overall_deploy:  parseInt(kv['overall_deploy'])    || 0,
+      ops: {},
+      sites: []
+    };
+
+    OPS_NAMES.forEach(function(name){
+      var p = 'ops_' + name.replace(/\s/g,'_').toLowerCase();
+      data.ops[name] = {
+        pct:     parseFloat(kv[p+'_pct'])     || 0,
+        present: parseInt(kv[p+'_present'])   || 0,
+        deploy:  parseInt(kv[p+'_deploy'])    || 0
+      };
+    });
+
+    var sitesRaw = kv['sites_data'] || '';
+    if (sitesRaw) {
+      sitesRaw.split('~').forEach(function(s){
+        var p = s.split('|');
+        if (p.length >= 6) {
+          data.sites.push({
+            site: p[0], present: parseInt(p[1])||0, deploy: parseInt(p[2])||0,
+            pct: parseFloat(p[3])||0, cat: p[4], ops: p[5]
+          });
+        }
+      });
+    }
+
+    renderDashboard(data, false);
+  } catch(e) {
+    console.error('CSV parse error:', e);
+    renderDashboard(FALLBACK, true);
+  }
+}
+
+function csvLineParts(line) {
+  var parts = [], cur = '', inQ = false;
+  for (var i = 0; i < line.length; i++) {
+    if (line[i] === '"') { inQ = !inQ; }
+    else if (line[i] === ',' && !inQ) { parts.push(cur); cur = ''; }
+    else cur += line[i];
+  }
+  parts.push(cur);
+  return parts;
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════
+function renderDashboard(data, isFallback) {
+  liveData = data;
+  hide('screen-loading'); hide('screen-setup'); hide('screen-error');
+  show('dashboard');
+
+  var dt = data.report_date ? new Date(data.report_date).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) : 'Today';
+  var fallbackNote = isFallback ? ' &nbsp;·&nbsp; <span style="color:#EF9F27">⚠ Showing sample data — connect your sheet</span>' : '';
+  var barHtml = `<div class="update-bar"><span>Report date: <b>${dt}</b> &nbsp;·&nbsp; Overall: <b style="color:${gc(data.overall_pct)}">${data.overall_pct}%</b> &nbsp;·&nbsp; ${data.overall_present.toLocaleString()} / ${data.overall_deploy.toLocaleString()} workers${fallbackNote}</span><span style="font-size:11px;color:#73726c">Auto-refreshes every ${AUTO_REFRESH_MINUTES} min</span></div>`;
+  ['sc','lg','cp'].forEach(function(id){ var el=document.getElementById('update-bar-'+id); if(el) el.innerHTML=barHtml; });
+
+  document.getElementById('topbar-sub').innerHTML = 'Report: ' + dt + ' &nbsp;·&nbsp; ' + buildOpsPortfolio(data).total_sites + ' sites' + (isFallback ? ' &nbsp;·&nbsp; sample data' : ' &nbsp;·&nbsp; live');
+
+  buildScorecards(data);
+  // Rebuild other views if active
+  var activeView = document.querySelector('.view.active');
+  if (activeView && activeView.id === 'v-league') buildLeague(data);
+  if (activeView && activeView.id === 'v-compare') buildCompare(data);
+}
+
+function buildOpsPortfolio(data) {
+  var portfolio = {};
+  var total = 0;
+  OPS_NAMES.forEach(function(name){
+    var sites = data.sites.filter(function(s){ return s.ops === name; });
+    total += sites.length;
+    var zero=0,crit=0,warn=0,watch=0,good=0;
+    sites.forEach(function(s){
+      var st = gst(s.pct);
+      if(st==='zero')crit++; // count zero as critical for portfolio
+      else if(st==='critical')crit++;
+      else if(st==='warning')warn++;
+      else if(st==='watch')watch++;
+      else good++;
+      if(s.pct===0) zero++;
+    });
+    var op = data.ops[name] || {};
+    portfolio[name] = {
+      name:name, sites:sites, total_sites:sites.length,
+      mtd_pct: op.pct || 0,
+      present: op.present||0, deploy: op.deploy||0,
+      zero:zero, critical:crit-zero, warning:warn, watch:watch, good:good
+    };
+  });
+  portfolio.total_sites = total;
+  return portfolio;
+}
+
+// ─── SCORECARD VIEW ───
+function buildScorecards(data) {
+  var port = buildOpsPortfolio(data);
+  var sorted = OPS_NAMES.slice().sort(function(a,b){ return port[b].mtd_pct - port[a].mtd_pct; });
+  var ranks = ['1st','2nd','3rd','4th','5th'];
+
+  document.getElementById('sc-row').innerHTML = sorted.map(function(name,i){
+    var o = port[name];
+    var needs = o.zero + o.critical + o.warning + o.watch;
+    return `<div class="sc${name===activeOps?' selected':''}" onclick="selectOps('${name}')" style="border-top-color:${gc(o.mtd_pct)}">
+      <div class="rank">${ranks[i]}</div>
+      <div class="sc-name">${name}</div>
+      <div class="big" style="color:${gc(o.mtd_pct)}">${o.mtd_pct}%</div>
+      <div class="meta">${o.total_sites} sites &nbsp;·&nbsp; ${o.present.toLocaleString()}/${o.deploy.toLocaleString()}</div>
+      <div class="site-pills">
+        ${o.zero?`<span class="sp" style="background:#F7C1C1;color:#791F1F">${o.zero} zero</span>`:''}
+        ${o.critical?`<span class="sp" style="background:#FCEBEB;color:#A32D2D">${o.critical} critical</span>`:''}
+        ${o.warning?`<span class="sp" style="background:#FAEEDA;color:#854F0B">${o.warning} warning</span>`:''}
+        ${o.watch?`<span class="sp" style="background:#FFF9E6;color:#633806">${o.watch} watch</span>`:''}
+        ${needs===0?`<span class="sp" style="background:#EAF3DE;color:#3B6D11">All good</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Panels
+  document.getElementById('ops-panels').innerHTML = sorted.map(function(name){
+    return buildPanel(name, port[name], data);
+  }).join('');
+
+  selectOps(activeOps, false);
+}
+
+function buildPanel(name, o, data) {
+  var zero   = o.sites.filter(function(s){return s.pct===0;});
+  var crit   = o.sites.filter(function(s){return s.pct>0&&s.pct<65;});
+  var warn   = o.sites.filter(function(s){return s.pct>=65&&s.pct<75;});
+  var watch  = o.sites.filter(function(s){return s.pct>=75&&s.pct<85;});
+  var good   = o.sites.filter(function(s){return s.pct>=85;});
+
+  function ab(key, sites) {
+    if (!sites.length) return '';
+    var info = ACTIONS[key];
+    return `<div class="ab ab-${key}">
+      <div class="ab-header">
+        <div class="ab-title" style="color:${info.color}">${info.label}</div>
+        <span class="ab-count">${sites.length} site${sites.length>1?'s':''}</span>
+      </div>
+      <ul class="action-list">${info.steps.map(function(a){return`<li>${a}</li>`;}).join('')}</ul>
+      <div class="site-chips">${sites.sort(function(a,b){return a.pct-b.pct;}).map(function(s){
+        return `<span class="chip chip-${key}"><span class="chip-pct">${s.pct}%</span>${s.site}</span>`;
+      }).join('')}</div>
+    </div>`;
+  }
+
+  var noAction = (zero.length+crit.length+warn.length+watch.length)===0;
+  var key = name.replace(/\s/g,'_');
+
+  return `<div class="ops-panel" id="panel-${key}">
+    <div class="panel-header">
+      <div>
+        <div class="ph-name">${name}</div>
+        <div class="ph-sub">Operations Manager &nbsp;·&nbsp; ${o.total_sites} sites under responsibility</div>
+      </div>
+      <div class="ph-stats">
+        <div class="ph-stat"><div class="lbl">MTD attendance</div><div class="val" style="color:${gc(o.mtd_pct)}">${o.mtd_pct}%</div></div>
+        <div class="ph-stat"><div class="lbl">Workers present</div><div class="val">${o.present.toLocaleString()}</div></div>
+        <div class="ph-stat"><div class="lbl">Sites needing action</div><div class="val" style="color:${noAction?'#3B6D11':'#E24B4A'}">${zero.length+crit.length+warn.length+watch.length}</div></div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h3>Site attendance distribution — ${name}</h3>
+        <div class="cw"><canvas id="donut-${key}"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Sites by status — ${name}</h3>
+        <div class="cw"><canvas id="bar-${key}"></canvas></div>
+      </div>
+    </div>
+
+    <div class="action-blocks">
+      ${ab('zero',zero)}${ab('critical',crit)}${ab('warning',warn)}${ab('watch',watch)}
+      ${noAction?`<div style="background:#EAF3DE;border-radius:10px;padding:18px;text-align:center;color:#3B6D11;font-size:14px;font-weight:700">
+        All ${o.total_sites} sites performing above 85% — no action required
+      </div>`:''}
+    </div>
+
+    <div class="card">
+      <h3>All ${o.total_sites} sites — ${name}</h3>
+      <div class="tw"><table class="site-tbl">
+        <thead><tr><th>#</th><th>Site name</th><th>Present</th><th>Deployment</th><th>Attendance %</th><th>Progress</th><th>Status</th></tr></thead>
+        <tbody>${o.sites.slice().sort(function(a,b){return a.pct-b.pct;}).map(function(s,i){
+          var st=gst(s.pct);
+          return `<tr><td style="color:#73726c">${i+1}</td>
+            <td style="font-weight:500;max-width:240px;word-break:break-word">${s.site}</td>
+            <td style="text-align:right">${s.present}</td>
+            <td style="text-align:right">${s.deploy}</td>
+            <td style="font-weight:800;color:${gc(s.pct)};text-align:right">${s.pct}%</td>
+            <td><div class="bar-w"><div class="bar"><div class="bar-f" style="width:${Math.min(s.pct,100)}%;background:${gc(s.pct)}"></div></div></div></td>
+            <td><span class="badge ${bl(st)}">${sl(st)}</span></td></tr>`;
+        }).join('')}</tbody>
+      </table></div>
+    </div>
+  </div>`;
+}
+
+function selectOps(name, doScroll) {
+  activeOps = name;
+  document.querySelectorAll('.sc').forEach(function(el){el.classList.remove('selected');});
+  var port = buildOpsPortfolio(liveData);
+  var sorted = OPS_NAMES.slice().sort(function(a,b){return port[b].mtd_pct-port[a].mtd_pct;});
+  var idx = sorted.indexOf(name);
+  var cards = document.querySelectorAll('.sc');
+  if (cards[idx]) cards[idx].classList.add('selected');
+
+  document.querySelectorAll('.ops-panel').forEach(function(p){p.classList.remove('active');});
+  var panel = document.getElementById('panel-'+name.replace(/\s/g,'_'));
+  if (panel) {
+    panel.classList.add('active');
+    buildPanelCharts(name, buildOpsPortfolio(liveData)[name]);
+    if (doScroll !== false) panel.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+}
+
+function buildPanelCharts(name, o) {
+  var key = name.replace(/\s/g,'_');
+  var dId='donut-'+key, bId='bar-'+key;
+  if(chartInst[dId])chartInst[dId].destroy();
+  if(chartInst[bId])chartInst[bId].destroy();
+
+  var zero=o.sites.filter(function(s){return s.pct===0;}).length;
+  var crit=o.sites.filter(function(s){return s.pct>0&&s.pct<65;}).length;
+  var warn=o.sites.filter(function(s){return s.pct>=65&&s.pct<75;}).length;
+  var watch=o.sites.filter(function(s){return s.pct>=75&&s.pct<85;}).length;
+  var good=o.sites.filter(function(s){return s.pct>=85;}).length;
+
+  chartInst[dId] = new Chart(document.getElementById(dId),{type:'doughnut',
+    data:{labels:['Zero','Critical <65%','Warning 65–75%','Watch 75–85%','Good ≥85%'],
+      datasets:[{data:[zero,crit,warn,watch,good],backgroundColor:['#791F1F','#E24B4A','#EF9F27','#F9CB42','#639922'],borderWidth:0,hoverOffset:5}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+      plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:10,padding:8}},
+        tooltip:{callbacks:{label:function(ctx){return' '+ctx.raw+' sites';}}}}}});
+
+  var byStatus = [
+    {label:'Zero',val:zero,color:'#791F1F'},
+    {label:'Critical',val:crit,color:'#E24B4A'},
+    {label:'Warning',val:warn,color:'#EF9F27'},
+    {label:'Watch',val:watch,color:'#F9CB42'},
+    {label:'Good',val:good,color:'#639922'}
+  ].filter(function(x){return x.val>0;});
+
+  chartInst[bId] = new Chart(document.getElementById(bId),{type:'bar',
+    data:{labels:byStatus.map(function(x){return x.label;}),
+      datasets:[{data:byStatus.map(function(x){return x.val;}),backgroundColor:byStatus.map(function(x){return x.color;}),borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return' '+ctx.raw+' sites';}}}},
+      scales:{y:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
+}
+
+// ─── LEAGUE VIEW ───
+function buildLeague(data) {
+  var port = buildOpsPortfolio(data);
+  var sorted = OPS_NAMES.slice().sort(function(a,b){return port[b].mtd_pct-port[a].mtd_pct;});
+  document.getElementById('league-rows').innerHTML = sorted.map(function(name,i){
+    var o = port[name];
+    var total = o.zero+o.critical+o.warning+o.watch+o.good;
+    function seg(n,c){return n?`<div class="lr-seg" style="flex:${n};background:${c}"></div>`:''; }
+    return `<div class="league-row" onclick="showView('scorecard',null);setTimeout(function(){selectOps('${name}');},50)">
+      <div class="lr-rank">${i+1}</div>
+      <div>
+        <div class="lr-name">${name}</div>
+        <div class="lr-meta">${o.total_sites} sites &nbsp;·&nbsp; ${o.present.toLocaleString()} / ${o.deploy.toLocaleString()} workers</div>
+        <div class="lr-bar-row">${seg(o.zero,'#791F1F')}${seg(o.critical,'#E24B4A')}${seg(o.warning,'#EF9F27')}${seg(o.watch,'#F9CB42')}${seg(o.good,'#639922')}</div>
+        <div style="display:flex;gap:10px;margin-top:4px;font-size:10px">
+          ${o.zero?`<span style="color:#791F1F;font-weight:700">${o.zero} zero</span>`:''}
+          ${o.critical?`<span style="color:#A32D2D;font-weight:700">${o.critical} critical</span>`:''}
+          ${o.warning?`<span style="color:#854F0B;font-weight:700">${o.warning} warning</span>`:''}
+          ${o.watch?`<span style="color:#633806;font-weight:700">${o.watch} watch</span>`:''}
+          <span style="color:#3B6D11;font-weight:700">${o.good} good</span>
+        </div>
+      </div>
+      <div><div class="lr-pct" style="color:${gc(o.mtd_pct)}">${o.mtd_pct}%</div><div class="lr-sub">MTD avg</div></div>
+    </div>`;
+  }).join('');
+
+  if(chartInst['all-trend'])chartInst['all-trend'].destroy();
+  // Placeholder trend since live feed doesn't have per-day series
+  // (Daily history from sheet would require a separate fetch)
+  var fakeLabels = ['26 Feb','27 Feb','28 Feb','01 Mar','02 Mar','03 Mar','04 Mar','05 Mar','06 Mar','07 Mar','08 Mar','09 Mar','10 Mar','11 Mar','12 Mar'];
+  var opColors = ['#3B6D11','#185FA5','#854F0B','#7F77DD','#993556'];
+  // Show horizontal reference lines per manager at their MTD level
+  chartInst['all-trend'] = new Chart(document.getElementById('all-trend-chart'),{type:'bar',
+    data:{labels:OPS_NAMES,datasets:[
+      {label:'MTD %',data:OPS_NAMES.map(function(n){return port[n].mtd_pct;}),backgroundColor:OPS_NAMES.map(function(n){return gc(port[n].mtd_pct);}),borderRadius:5,borderSkipped:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return' '+ctx.raw+'%';}}}},
+      scales:{y:{min:60,max:100,ticks:{callback:function(v){return v+'%';},font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
+}
+
+// ─── COMPARE VIEW ───
+function buildCompare(data) {
+  var port = buildOpsPortfolio(data);
+  var sorted = OPS_NAMES.slice().sort(function(a,b){return port[b].mtd_pct-port[a].mtd_pct;});
+
+  document.getElementById('compare-cards').innerHTML = sorted.map(function(name){
+    var o = port[name];
+    return `<div class="cg">
+      <div class="cg-name">${name}</div>
+      <div class="cg-big" style="color:${gc(o.mtd_pct)}">${o.mtd_pct}%</div>
+      <div class="cg-bar"><div class="cg-fill" style="width:${o.mtd_pct}%;background:${gc(o.mtd_pct)}"></div></div>
+      <div class="cg-breakdown">
+        <div class="cg-b" style="background:#FCEBEB;color:#A32D2D">${o.zero+o.critical} critical</div>
+        <div class="cg-b" style="background:#FAEEDA;color:#854F0B">${o.warning} warning</div>
+        <div class="cg-b" style="background:#FFF9E6;color:#633806">${o.watch} watch</div>
+        <div class="cg-b" style="background:#EAF3DE;color:#3B6D11">${o.good} good</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  if(chartInst['stack'])chartInst['stack'].destroy();
+  chartInst['stack'] = new Chart(document.getElementById('stack-chart'),{type:'bar',
+    data:{labels:sorted,datasets:[
+      {label:'Zero/Critical',data:sorted.map(function(n){return port[n].zero+port[n].critical;}),backgroundColor:'#E24B4A',borderRadius:2},
+      {label:'Warning',      data:sorted.map(function(n){return port[n].warning;}),backgroundColor:'#EF9F27',borderRadius:2},
+      {label:'Watch',        data:sorted.map(function(n){return port[n].watch;}),backgroundColor:'#F9CB42',borderRadius:2},
+      {label:'Good',         data:sorted.map(function(n){return port[n].good;}),backgroundColor:'#639922',borderRadius:2}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{font:{size:11},boxWidth:12,padding:8}}},
+      scales:{x:{stacked:true,ticks:{font:{size:11}},grid:{display:false}},y:{stacked:true,ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'}}}}});
+
+  var tableHTML = `<table class="site-tbl"><thead><tr><th>Ops manager</th><th>Site name</th><th>%</th><th>Status</th><th>Action required</th></tr></thead><tbody>`;
+  sorted.forEach(function(name){
+    var needsAction = port[name].sites.filter(function(s){return gst(s.pct)!=='good';}).sort(function(a,b){return a.pct-b.pct;});
+    if (!needsAction.length) return;
+    needsAction.forEach(function(s,i){
+      var st=gst(s.pct), info=ACTIONS[st]||ACTIONS.watch;
+      tableHTML += `<tr>
+        <td style="font-weight:700;white-space:nowrap">${i===0?name:''}</td>
+        <td style="max-width:220px;word-break:break-word;font-weight:500">${s.site}</td>
+        <td style="font-weight:800;color:${gc(s.pct)}">${s.pct}%</td>
+        <td><span class="badge ${bl(st)}">${sl(st)}</span></td>
+        <td style="font-size:11px;color:#444">${info.steps[0]}</td>
+      </tr>`;
+    });
+  });
+  tableHTML += '</tbody></table>';
+  document.getElementById('compare-table').innerHTML = tableHTML;
+}
+
+// ─── UTILS ───
+function show(id){var el=document.getElementById(id);if(el)el.style.display='';}
+function hide(id){var el=document.getElementById(id);if(el)el.style.display='none';}
+function showView(id, btn) {
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+  document.querySelectorAll('.nav-pill').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('v-'+id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  else {var m={scorecard:0,league:1,compare:2};var pills=document.querySelectorAll('.nav-pill');if(pills[m[id]])pills[m[id]].classList.add('active');}
+  if (id==='league' && liveData) buildLeague(liveData);
+  if (id==='compare' && liveData) buildCompare(liveData);
+}
+
+// ─── AUTO-REFRESH ───
+setInterval(function(){ if(liveData) loadData(); }, AUTO_REFRESH_MINUTES * 60 * 1000);
+
+// ─── INIT ───
+window.onload = function() {
+  var url = getStoredUrl();
+  if (!url || url === 'YOUR_CSV_URL_HERE') {
+    // No URL configured — load with fallback to show dashboard structure
+    renderDashboard(FALLBACK, true);
+  } else {
+    loadData();
+  }
+};
+</script>
+</body>
+</html>
