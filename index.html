@@ -511,16 +511,16 @@ setInterval(function(){ loadData(); }, AUTO_REFRESH_MINUTES * 60 * 1000);
 window.onload = function(){ loadData(); };
 </script>
   <script>
-setInterval(function(){
-    location.reload();
-}, 300000);
-</script>
-  <script>
-var password = "Crest@2026";   // change password here
-var input = prompt("Enter Crest Dashboard Password");
+var password = "Crest@2026";
 
-if(input !== password){
-    document.body.innerHTML = "<h2>Access Denied</h2>";
+if(!sessionStorage.getItem("crest_auth")){
+    var input = prompt("Enter Crest Dashboard Password");
+
+    if(input === password){
+        sessionStorage.setItem("crest_auth", "true");
+    } else {
+        document.body.innerHTML = "<h2>Access Denied</h2>";
+    }
 }
 </script>
 </body>
