@@ -226,7 +226,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 // ═══════════════════════════════════════════════════════
 // CONFIG — paste your CSV URL here OR use the setup screen
 // ═══════════════════════════════════════════════════════
-var CSV_URL = "https://docs.google.com/spreadsheets/d/1ELDFDoc0q7ZeIX3zeSs8nuEVo7eypa7_NjiIurlZD10/gviz/tq?tqx=out:csv&sheet=Live%20Feed&gid=637992924";
+var CSV_URL = "https://docs.google.com/spreadsheets/d/1ELDFDoc0q7ZeIX3zeSs8nuEVo7eypa7_NjiIurlZD10/gviz/tq?tqx=out:csv&sheet=Live%20Feed&gid=637992924&t=" + new Date().getTime();
 // Example: "https://docs.google.com/spreadsheets/d/1abc.../gviz/tq?tqx=out:csv&sheet=Live+Feed&gid=123456"
 
 var AUTO_REFRESH_MINUTES = 30; // refresh every 30 min automatically
@@ -251,6 +251,118 @@ var FALLBACK = {
 // CONSTANTS
 // ═══════════════════════════════════════════════════════
 var OPS_NAMES = ['Deepak','Neeru','Raees','Prashant Sonavane','Sandeep'];
+var SITE_OPS_MAP = {
+  '72 EMPIRE': 'Sandeep',
+  '72 EMPIRE (FDE)': 'Sandeep',
+  'AANGAN BUILDING': 'Neeru',
+  'ADEN - SAI DARSHAN': 'Sandeep',
+  'ADEN SALES OFFICE': 'Sandeep',
+  'Aeka Advisors India LLP': 'Sandeep',
+  'AKASHDEEP BUNGALOW': 'Prashant Sonavane',
+  'ALEMBIC LIMITED (ficus Court)': 'Sandeep',
+  'Applaud 38': 'Prashant Sonavane',
+  'Ashiana / Ocean Vista Sales Office': 'Sandeep',
+  'ASHIANA PROJECT': 'Sandeep',
+  'ASHIANA SALES OFFICE': 'Sandeep',
+  'ASHIKA STOCK BROKING LTD': 'Sandeep',
+  'ATUL PROJECTS': 'Sandeep',
+  'AVENUE D1 PROJECT OFFICE': 'Sandeep',
+  'BASANT PARK BALMORAL PROJECT OFFICE': 'Sandeep',
+  'BASANT PARK SALES OFFICE': 'Sandeep',
+  'BELLA PMS': 'Neeru',
+  'BHILOSA INDUSTRIES PVT LTD': 'Sandeep',
+  'BHILOSA UNIT 2 NAROLI': 'Sandeep',
+  'CEC SALES OFFICE- THANE': 'Sandeep',
+  'CELIO RETAIL PRIVATE LIMITED': 'Sandeep',
+  'CENTRAL PARK': 'Neeru',
+  'CENTRAL PARK 8TH FLOOR': 'Sandeep',
+  'CLEON PROJECT OFFICE': 'Sandeep',
+  'CONSTRUCTION OFFICE-CO': 'Sandeep',
+  'Corporate Avenue - Andheri': 'Prashant Sonavane',
+  'CRESCENT SALES': 'Sandeep',
+  'CRESENT PROJECT': 'Sandeep',
+  'CROWN PROJECT': 'Sandeep',
+  'CROWN PROJECT OFFICE': 'Sandeep',
+  'CROWN SALES - PMS': 'Deepak',
+  'CROWN SALES OFFICE': 'Sandeep',
+  'DAKLE INDUSTRIAL PLASTIC': 'Sandeep',
+  'DOSTI OAK (DOSTI WEST COUNTY) CHS': 'Raees',
+  'dummy': 'Sandeep',
+  'ELEMENTS SALES': 'Neeru',
+  'ESTORIA  SALES OFFICE(Porta Cabin Wadala)': 'Sandeep',
+  'GANGA JAMUNA COOPERATIVE HOUSING SOCIETY LIMITED': 'Neeru',
+  'GARDEN 6 PMS': 'Neeru',
+  'Grand Pallazo': 'Raees',
+  'GURUKRUPA REALCOM INFRASTRUCTURE DEVELOPERS': 'Prashant Sonavane',
+  'HORIZON BHANDUP': 'Sandeep',
+  'Horizon Bhandup PMS': 'Prashant Sonavane',
+  'INGEVITY INDIA PRIVATE LIMITED': 'Sandeep',
+  'JARIWALA SALES OFFICE (OM GALAXY)': 'Sandeep',
+  'Kasara construction Office': 'Sandeep',
+  'KASARA SALES OFFICE': 'Sandeep',
+  'KEY INTERIORS - PROJECT OFFICE': 'Sandeep',
+  'KEYHEIGHT REALTORS PRIVATE LIMITED (CLIFF PROJECT)': 'Sandeep',
+  'LA REVE': 'Sandeep',
+  'LA VIE': 'Sandeep',
+  'LA. FONTAINE - PMS': 'Neeru',
+  'LABOUR CAMP': 'Sandeep',
+  'LA-FAMILIA': 'Sandeep',
+  'LIASONING': 'Sandeep',
+  'MAYFAIR THE VIEW': 'Sandeep',
+  'Midtown Promesa': 'Prashant Sonavane',
+  'NAMAN HABITAT': 'Neeru',
+  'NAMAN HABITAT POSSESSION': 'Neeru',
+  'NAMAN PREMIER E-WING': 'Neeru',
+  'NATRAJ': 'Sandeep',
+  'NATRAJ - 4TH FLOOR': 'Sandeep',
+  'NATRAJ (FDE)': 'Sandeep',
+  'NEWA BHAKTI KNOWLEDGE CITY': 'Raees',
+  'PALI PARISHRAM -PMS SITE': 'Neeru',
+  'PALI PARISHRAM PROJECT OFFICE': 'Sandeep',
+  'PARAMOUNT PROJECT OFFICE': 'Sandeep',
+  'PARAMOUNT REHAB PROJECT OFFICE': 'Sandeep',
+  'PARAMOUNT SALES': 'Raees',
+  'PARAMOUNT SALES OFFICE': 'Sandeep',
+  'PARKMIST': 'Raees',
+  'PIRAMAL MAHALAXMI': 'Sandeep',
+  'PIRAMAL REALTY- LOWER PAREL': 'Sandeep',
+  'PRIVE PROJECT OFFICE': 'Sandeep',
+  'PRIVE SALES OFFICE': 'Sandeep',
+  'RAJSHREE POLYPACK KACHIGAM - UNIT 3': 'Sandeep',
+  'RAJSHREE POLYPACK LTD (UNIT - II)': 'Sandeep',
+  'Registration office Worli': 'Sandeep',
+  'RESERVE SALES OFFICE': 'Sandeep',
+  'Reserve Society': 'Raees',
+  'Runwal Bliss Club house': 'Prashant Sonavane',
+  'Runwal fifth Avenue': 'Prashant Sonavane',
+  'RUNWAL FORESTS TOWERS CO-OP HOUSING LTD': 'Neeru',
+  'Runwal Garden Heights (BCAM)': 'Prashant Sonavane',
+  'RUSTOMJEE AURELIA -1 CO-OPERATIVE HOUSING SOCIETY': 'Deepak',
+  'RUSTOMJEE AZZIANO CHS LTD': 'Deepak',
+  'RUSTOMJEE BELLA SALES': 'Sandeep',
+  'RUSTOMJEE BELLE-VIE KASARA SALES OFFICE': 'Sandeep',
+  'RUSTOMJEE ERIKA PMS': 'Prashant Sonavane',
+  'Rustomjee Estoria wadala': 'Sandeep',
+  'Rustomjee GTB Nagar Project': 'Prashant Sonavane',
+  'RUSTOMJEE SEASONS - D WING PROJECT': 'Raees',
+  'Rustomjee Yazarina 03': 'Neeru',
+  'SAGAR TARANG - VERSOVA': 'Sandeep',
+  'SEASONS SALES - PMS': 'Raees',
+  'SIMSON PHARMA LTD': 'Sandeep',
+  'Social Housing Project': 'Sandeep',
+  'STELLA PROJECT OFFICE': 'Sandeep',
+  'STELLA SALES OFFICE': 'Sandeep',
+  'SUMMIT (VALET)': 'Sandeep',
+  'SUMMIT SALES - PMS': 'Raees',
+  'TELE CALLER OFFICE': 'Sandeep',
+  'THE PALACIMO CO OP HSG SOCIETY LTD': 'Neeru',
+  'VERDANT VISTAS': 'Sandeep',
+  'WaterFront Tower Private Limited': 'Prashant Sonavane',
+  'WIPRO WATER -AIROLI': 'Sandeep',
+  'YAZARINA ONE CHS LIMITED - RUSTOMJEE': 'Neeru',
+  'ZINNIA': 'Neeru'
+};
+
 var OPS_COLORS = {'Deepak':'#3B6D11','Neeru':'#185FA5','Raees':'#854F0B','Prashant Sonavane':'#7F77DD','Sandeep':'#993556'};
 var ACTIONS = {
   zero:     {label:'Zero attendance — immediate escalation', cls:'zero', color:'#791F1F',
@@ -293,30 +405,72 @@ function showSetup() {
 }
 
 function loadData() {
-  var url = getStoredUrl();
-  if (!url || url === 'YOUR_CSV_URL_HERE') { showSetup(); return; }
-
   hide('screen-setup'); hide('screen-error'); hide('dashboard');
   show('screen-loading');
 
-  // Add cache-bust
-  var fetchUrl = url + (url.includes('?') ? '&' : '?') + '_cb=' + Date.now();
+  var webAppUrl = "https://script.google.com/macros/s/AKfycbwYfXw5c5zwEPxdJ-gh3TAZ2tjqEAj5ZCCVBW3Yz9M08Zmt4_T3U904lm1uM4vHNcr5hA/exec?_t=" + Date.now();
 
-  var proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(fetchUrl);
-  fetch(proxyUrl)
-    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
-    .then(function(csv){ parseCsvAndRender(csv); })
-    .catch(function(e){
-      console.warn('Proxy failed, trying direct fetch:', e);
-      fetch(fetchUrl)
-        .then(function(r){ return r.text(); })
-        .then(function(csv){ parseCsvAndRender(csv); })
-        .catch(function(e2){
-          console.warn('Direct fetch also failed, using real fallback data:', e2);
-          renderDashboard(FALLBACK, false);
+  fetch(webAppUrl)
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(kv) {
+      console.log('Live data loaded! Date:', kv['report_date'], 'Sites:', kv['sites_count']);
+      var data = {
+        report_date:     kv['report_date'] || '',
+        overall_pct:     parseFloat(kv['overall_pct']) || 0,
+        overall_present: parseInt(kv['overall_present']) || 0,
+        overall_deploy:  parseInt(kv['overall_deploy']) || 0,
+        ops: {}, sites: []
+      };
+      OPS_NAMES.forEach(function(n) {
+        var p = 'ops_' + n.replace(/\s+/g, '_').toLowerCase();
+        data.ops[n] = {
+          pct:     parseFloat(kv[p+'_pct'])     || 0,
+          present: parseInt(kv[p+'_present'])   || 0,
+          deploy:  parseInt(kv[p+'_deploy'])    || 0
+        };
+      });
+      var sd = kv['sites_data'] || '';
+      if (sd) {
+        sd.split('~').forEach(function(s) {
+          var p = s.split('|');
+          if (p.length >= 5) {
+            var siteName = p[0];
+            var opsName = p[5] || SITE_OPS_MAP[siteName] || '';
+            // Try case-insensitive match if exact match fails
+            if (!opsName) {
+              var lower = siteName.toLowerCase();
+              for (var key in SITE_OPS_MAP) {
+                if (key.toLowerCase() === lower) {
+                  opsName = SITE_OPS_MAP[key];
+                  break;
+                }
+              }
+            }
+            data.sites.push({
+              site: siteName, present: parseInt(p[1])||0,
+              deploy: parseInt(p[2])||0, pct: parseFloat(p[3])||0,
+              cat: p[4], ops: opsName
+            });
+          }
         });
+      }
+      console.log('Sites parsed:', data.sites.length);
+      if (data.sites.length > 0) {
+        renderDashboard(data, false);
+      } else {
+        renderDashboard(FALLBACK, false);
+      }
+    })
+    .catch(function(e) {
+      console.error('Fetch error:', e);
+      renderDashboard(FALLBACK, false);
     });
 }
+
+
 
 function parseCsvAndRender(csv) {
   try {
@@ -349,10 +503,18 @@ function parseCsvAndRender(csv) {
     if (sitesRaw) {
       sitesRaw.split('~').forEach(function(s){
         var p = s.split('|');
-        if (p.length >= 6) {
+        if (p.length >= 5) {
+          var siteName = p[0];
+          var opsName = p[5] || SITE_OPS_MAP[siteName] || '';
+          if (!opsName) {
+            var lower = siteName.toLowerCase();
+            for (var key in SITE_OPS_MAP) {
+              if (key.toLowerCase() === lower) { opsName = SITE_OPS_MAP[key]; break; }
+            }
+          }
           data.sites.push({
-            site: p[0], present: parseInt(p[1])||0, deploy: parseInt(p[2])||0,
-            pct: parseFloat(p[3])||0, cat: p[4], ops: p[5]
+            site: siteName, present: parseInt(p[1])||0, deploy: parseInt(p[2])||0,
+            pct: parseFloat(p[3])||0, cat: p[4], ops: opsName
           });
         }
       });
@@ -692,7 +854,7 @@ function showView(id, btn) {
 }
 
 // ─── AUTO-REFRESH ───
-setInterval(function(){ if(liveData) loadData(); }, AUTO_REFRESH_MINUTES * 60 * 1000);
+setInterval(function(){ loadData(); }, AUTO_REFRESH_MINUTES * 60 * 1000);
 
 // ─── INIT ───
 window.onload = function() {
