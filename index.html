@@ -19,7 +19,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .refresh-btn{padding:4px 12px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid #444;background:transparent;color:#ccc}
 .view{display:none;padding:20px 24px}.view.active{display:block}
-.update-bar{background:#EAF3DE;border-radius:8px;padding:8px 14px;font-size:12px;color:#3B6D11;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.update-bar{background:#EAF3DE;border-radius:8px;padding:8px 14px;font-size:12px;color:#3B6D11;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
 .scorecards{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px}
 .sc{background:#fff;border-radius:10px;padding:14px 16px;border-top:4px solid transparent;cursor:pointer;transition:transform .12s,box-shadow .12s}
 .sc:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.09)}
@@ -153,169 +153,180 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <script>
-// ── CONFIG ────────────────────────────────────────────────────
-var WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwYfXw5c5zwEPxdJ-gh3TAZ2tjqEAj5ZCCVBW3Yz9M08Zmt4_T3U904lm1uM4vHNcr5hA/exec';
+// ════════════════════════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════════════════════════
+var WEB_APP_URL         = 'https://script.google.com/macros/s/AKfycbwYfXw5c5zwEPxdJ-gh3TAZ2tjqEAj5ZCCVBW3Yz9M08Zmt4_T3U904lm1uM4vHNcr5hA/exec';
 var AUTO_REFRESH_MINUTES = 30;
 
-// UPDATED April 2026:
-//   Neeru → Gauri
-//   Prashant Sonavane → Prashant
+// ── CORRECT ops managers as of April 2026 ──
+// Neeru        → REPLACED by Gauri
+// Prashant Sonavane → RENAMED to Prashant
 var OPS_NAMES  = ['Deepak','Deepak M','Gauri','Prashant','Raees','Sandeep'];
 var OPS_COLORS = {
-  'Deepak':   '#1a6b3c',
+  'Deepak'  : '#1a6b3c',
   'Deepak M': '#2a9d5c',
-  'Gauri':    '#185FA5',
+  'Gauri'   : '#185FA5',
   'Prashant': '#7F77DD',
-  'Raees':    '#854F0B',
-  'Sandeep':  '#993556'
+  'Raees'   : '#854F0B',
+  'Sandeep' : '#993556'
 };
 
-// ── SITE → OPS MAP (April 2026 — sourced from Excel) ─────────
-// Deepak   : 5 sites
-// Deepak M : 7 sites
-// Gauri    : 12 sites  (NEW — replaced Neeru)
-// Prashant : 11 sites  (RENAMED from Prashant Sonavane)
-// Raees    : 3 sites
-// Sandeep  : 71 sites
+// ════════════════════════════════════════════════════════════
+// SITE → OPS MAP  (verified directly from Excel Apr 2026)
+// Deepak    5 sites
+// Deepak M  7 sites
+// Gauri    12 sites  ← replaces Neeru
+// Prashant 11 sites  ← renamed from Prashant Sonavane
+// Raees     3 sites
+// Sandeep  71 sites
+// ════════════════════════════════════════════════════════════
 var SITE_OPS_MAP = {
 
-  // ── Deepak (5 sites) ──
-  'CROWN SALES - PMS':                  'Deepak',
-  'CROWN TOWER C':                      'Deepak',   // NEW
-  'ELEMENTS SALES':                     'Deepak',   // NEW
-  'NAMAN PREMIER E-WING':               'Deepak',   // NEW
-  'RUSTOMJEE AZZIANO CHS LTD':          'Deepak',
+  // ── Deepak (5) ──────────────────────────────────────────
+  'CROWN SALES - PMS'         : 'Deepak',
+  'CROWN TOWER C'             : 'Deepak',
+  'ELEMENTS SALES'            : 'Deepak',
+  'NAMAN PREMIER E-WING'      : 'Deepak',
+  'RUSTOMJEE AZZIANO CHS LTD' : 'Deepak',
 
-  // ── Deepak M (7 sites) ──
-  'PARAMOUNT SALES':                    'Deepak M',
-  'Reserve Society':                    'Deepak M',
-  'RUSTOMJEE CLEON PMS':                'Deepak M', // NEW
-  'RUSTOMJEE SEASONS - D WING PROJECT': 'Deepak M',
-  'SEASONS SALES - PMS':                'Deepak M',
-  'SUMMIT (VALET)':                     'Deepak M',
-  'SUMMIT SALES - PMS':                 'Deepak M',
+  // ── Deepak M (7) ────────────────────────────────────────
+  'PARAMOUNT SALES'                    : 'Deepak M',
+  'Reserve Society'                    : 'Deepak M',
+  'RUSTOMJEE CLEON PMS'                : 'Deepak M',
+  'RUSTOMJEE SEASONS - D WING PROJECT' : 'Deepak M',
+  'SEASONS SALES - PMS'                : 'Deepak M',
+  'SUMMIT (VALET)'                     : 'Deepak M',
+  'SUMMIT SALES - PMS'                 : 'Deepak M',
 
-  // ── Gauri (12 sites) — NEW MANAGER ──
-  'AANGAN BUILDING':                                  'Gauri',
-  'BELLA PMS':                                        'Gauri',
-  'CENTRAL PARK':                                     'Gauri',
-  'GANGA JAMUNA COOPERATIVE HOUSING SOCIETY LIMITED': 'Gauri',
-  'GARDEN 6 PMS':                                     'Gauri',
-  'LA. FONTAINE - PMS':                               'Gauri',
-  'PALI PARISHRAM -PMS SITE':                         'Gauri',
-  'RUNWAL FORESTS TOWERS CO-OP HOUSING LTD':          'Gauri',
-  'Rustomjee Yazarina 03':                            'Gauri',
-  'THE PALACIMO CO OP HSG SOCIETY LTD':               'Gauri',
-  'YAZARINA ONE CHS LIMITED - RUSTOMJEE':             'Gauri',
-  'ZINNIA':                                           'Gauri',
+  // ── Gauri (12) — NEW, replaced Neeru ────────────────────
+  'AANGAN BUILDING'                                  : 'Gauri',
+  'BELLA PMS'                                        : 'Gauri',
+  'CENTRAL PARK'                                     : 'Gauri',
+  'GANGA JAMUNA COOPERATIVE HOUSING SOCIETY LIMITED' : 'Gauri',
+  'GARDEN 6 PMS'                                     : 'Gauri',
+  'LA. FONTAINE - PMS'                               : 'Gauri',
+  'PALI PARISHRAM -PMS SITE'                         : 'Gauri',
+  'RUNWAL FORESTS TOWERS CO-OP HOUSING LTD'          : 'Gauri',
+  'Rustomjee Yazarina 03'                            : 'Gauri',
+  'THE PALACIMO CO OP HSG SOCIETY LTD'               : 'Gauri',
+  'YAZARINA ONE CHS LIMITED - RUSTOMJEE'             : 'Gauri',
+  'ZINNIA'                                           : 'Gauri',
 
-  // ── Prashant (11 sites) — RENAMED from Prashant Sonavane ──
-  'AKASHDEEP BUNGALOW':                   'Prashant',
-  'Applaud 38':                           'Prashant',
-  'Corporate Avenue - Andheri':           'Prashant',
+  // ── Prashant (11) — renamed from Prashant Sonavane ──────
+  'AKASHDEEP BUNGALOW'                       : 'Prashant',
+  'Applaud 38'                               : 'Prashant',
+  'Corporate Avenue - Andheri'               : 'Prashant',
   'GURUKRUPA REALCOM INFRASTRUCTURE DEVELOPERS': 'Prashant',
-  'Horizon Bhandup PMS':                  'Prashant',
-  'Midtown Promesa':                      'Prashant',
-  'Runwal Bliss Club house':              'Prashant',
-  'Runwal fifth Avenue':                  'Prashant',
-  'Runwal Garden Heights (BCAM)':         'Prashant',
-  'RUSTOMJEE ERIKA PMS':                  'Prashant',
-  'WaterFront Tower Private Limited':     'Prashant',
+  'Horizon Bhandup PMS'                      : 'Prashant',
+  'Midtown Promesa'                          : 'Prashant',
+  'Runwal Bliss Club house'                  : 'Prashant',
+  'Runwal fifth Avenue'                      : 'Prashant',
+  'Runwal Garden Heights (BCAM)'             : 'Prashant',
+  'RUSTOMJEE ERIKA PMS'                      : 'Prashant',
+  'WaterFront Tower Private Limited'         : 'Prashant',
 
-  // ── Raees (3 sites) ──
-  'DOSTI OAK (DOSTI WEST COUNTY) CHS': 'Raees',
-  'Grand Pallazo':                      'Raees',
-  'NEWA BHAKTI KNOWLEDGE CITY':         'Raees',
+  // ── Raees (3) ───────────────────────────────────────────
+  'DOSTI OAK (DOSTI WEST COUNTY) CHS' : 'Raees',
+  'Grand Pallazo'                      : 'Raees',
+  'NEWA BHAKTI KNOWLEDGE CITY'         : 'Raees',
 
-  // ── Sandeep (71 sites) ──
-  '72 EMPIRE':                                          'Sandeep',
-  '72 EMPIRE (FDE)':                                    'Sandeep',
-  'ADEN - SAI DARSHAN':                                 'Sandeep',
-  'ADEN SALES OFFICE':                                  'Sandeep',
-  'Aeka Advisors India LLP':                            'Sandeep',
-  'ALEMBIC LIMITED (ficus Court)':                      'Sandeep',
-  'Ashiana / Ocean Vista Sales Office':                 'Sandeep',
-  'ASHIANA PROJECT':                                    'Sandeep',
-  'ASHIKA STOCK BROKING LTD':                           'Sandeep',
-  'ATUL PROJECTS':                                      'Sandeep',
-  'BASANT PARK BALMORAL PROJECT OFFICE':                'Sandeep',
-  'BASANT PARK SALES OFFICE':                           'Sandeep',
-  'BHILOSA INDUSTRIES PVT LTD':                         'Sandeep',
-  'BHILOSA UNIT 2 NAROLI':                              'Sandeep',
-  'Billing Department':                                 'Sandeep', // NEW
-  'CEC SALES OFFICE- THANE':                            'Sandeep',
-  'CELIO RETAIL PRIVATE LIMITED':                       'Sandeep',
-  'CENTRAL PARK 8TH FLOOR':                            'Sandeep',
-  'CLEON PROJECT OFFICE':                               'Sandeep',
-  'CONSTRUCTION OFFICE-CO':                             'Sandeep',
-  'CRESCENT SALES':                                     'Sandeep',
-  'CRESENT PROJECT':                                    'Sandeep',
-  'CROWN PROJECT':                                      'Sandeep',
-  'CROWN PROJECT OFFICE':                               'Sandeep',
-  'CROWN SALES OFFICE':                                 'Sandeep',
-  'DAKLE INDUSTRIAL PLASTIC':                           'Sandeep',
-  'dummy':                                              'Sandeep',
-  'HORIZON BHANDUP':                                    'Sandeep',
-  'INGEVITY INDIA PRIVATE LIMITED':                     'Sandeep',
-  'JARIWALA SALES OFFICE (OM GALAXY)':                  'Sandeep',
-  'Kasara construction Office':                         'Sandeep',
-  'KASARA SALES OFFICE':                                'Sandeep',
-  'KEY INTERIORS - PROJECT OFFICE':                     'Sandeep',
-  'KEYHEIGHT REALTORS PRIVATE LIMITED (CLIFF PROJECT)': 'Sandeep',
-  'LA Familia Porta Cabin':                             'Sandeep', // NEW
-  'LA REVE':                                            'Sandeep',
-  'LA VIE':                                             'Sandeep',
-  'LABOUR CAMP':                                        'Sandeep',
-  'LA-FAMILIA':                                         'Sandeep',
-  'LIASONING':                                          'Sandeep',
-  'MAYFAIR THE VIEW':                                   'Sandeep',
-  'NAMAN HABITAT':                                      'Sandeep',
-  'NATRAJ':                                             'Sandeep',
-  'NATRAJ - 4TH FLOOR':                               'Sandeep',
-  'NATRAJ (FDE)':                                       'Sandeep',
-  'PANORAMA PROJECT ':                                  'Sandeep', // NEW
-  'PARAMOUNT PROJECT OFFICE':                           'Sandeep',
-  'PARAMOUNT REHAB PROJECT OFFICE':                     'Sandeep',
-  'PARAMOUNT SALES OFFICE':                             'Sandeep',
-  'PARKMIST':                                           'Sandeep', // moved from Raees
-  'PIRAMAL REALTY- LOWER PAREL':                        'Sandeep',
-  'PRIVE PROJECT OFFICE':                               'Sandeep',
-  'PRIVE SALES OFFICE':                                 'Sandeep',
-  'RAJSHREE POLYPACK KACHIGAM - UNIT 3':                'Sandeep',
-  'RAJSHREE POLYPACK LTD (UNIT - II)':                  'Sandeep',
-  'Registration office Worli':                          'Sandeep',
-  'RESERVE SALES OFFICE':                               'Sandeep',
-  'Rustomjee Bandstand Project':                        'Sandeep', // NEW
-  'RUSTOMJEE BELLA SALES':                              'Sandeep',
-  'RUSTOMJEE BELLE-VIE KASARA SALES OFFICE':            'Sandeep',
-  'Rustomjee Estoria wadala':                           'Sandeep',
-  'Rustomjee GTB Nagar Project':                        'Sandeep', // moved from Prashant
-  'SAGAR TARANG - VERSOVA':                             'Sandeep',
-  'SIMSON PHARMA LTD':                                  'Sandeep',
-  'Social Housing Project':                             'Sandeep',
-  'STELLA PROJECT OFFICE':                              'Sandeep',
-  'STELLA SALES OFFICE':                                'Sandeep',
-  'TELE CALLER OFFICE':                                 'Sandeep',
-  'VERDANT VISTAS':                                     'Sandeep',
-  'Vista Bay Sales (Juliet House)':                     'Sandeep', // NEW
-  'WIPRO WATER -AIROLI':                                'Sandeep',
-  // legacy aliases
-  'ASHIANA SALES OFFICE':                               'Sandeep',
-  'AVENUE D1 PROJECT OFFICE':                           'Sandeep',
-  'ESTORIA  SALES OFFICE(Porta Cabin Wadala)':          'Sandeep',
-  'ESTORIA SALES OFFICE(Porta Cabin Wadala)':           'Sandeep',
-  'NAMAN HABITAT POSSESSION':                           'Sandeep',
-  'PIRAMAL MAHALAXMI':                                  'Sandeep',
-  'RUSTOMJEE AURELIA -1 CO-OPERATIVE HOUSING SOCIETY':  'Sandeep'
+  // ── Sandeep (71) ────────────────────────────────────────
+  '72 EMPIRE'                                          : 'Sandeep',
+  '72 EMPIRE (FDE)'                                    : 'Sandeep',
+  'ADEN - SAI DARSHAN'                                 : 'Sandeep',
+  'ADEN SALES OFFICE'                                  : 'Sandeep',
+  'Aeka Advisors India LLP'                            : 'Sandeep',
+  'ALEMBIC LIMITED (ficus Court)'                      : 'Sandeep',
+  'Ashiana / Ocean Vista Sales Office'                 : 'Sandeep',
+  'ASHIANA PROJECT'                                    : 'Sandeep',
+  'ASHIKA STOCK BROKING LTD'                           : 'Sandeep',
+  'ATUL PROJECTS'                                      : 'Sandeep',
+  'BASANT PARK BALMORAL PROJECT OFFICE'                : 'Sandeep',
+  'BASANT PARK SALES OFFICE'                           : 'Sandeep',
+  'BHILOSA INDUSTRIES PVT LTD'                         : 'Sandeep',
+  'BHILOSA UNIT 2 NAROLI'                              : 'Sandeep',
+  'Billing Department'                                 : 'Sandeep',
+  'CEC SALES OFFICE- THANE'                            : 'Sandeep',
+  'CELIO RETAIL PRIVATE LIMITED'                       : 'Sandeep',
+  'CENTRAL PARK 8TH FLOOR'                             : 'Sandeep',
+  'CLEON PROJECT OFFICE'                               : 'Sandeep',
+  'CONSTRUCTION OFFICE-CO'                             : 'Sandeep',
+  'CRESCENT SALES'                                     : 'Sandeep',
+  'CRESENT PROJECT'                                    : 'Sandeep',
+  'CROWN PROJECT'                                      : 'Sandeep',
+  'CROWN PROJECT OFFICE'                               : 'Sandeep',
+  'CROWN SALES OFFICE'                                 : 'Sandeep',
+  'DAKLE INDUSTRIAL PLASTIC'                           : 'Sandeep',
+  'dummy'                                              : 'Sandeep',
+  'HORIZON BHANDUP'                                    : 'Sandeep',
+  'INGEVITY INDIA PRIVATE LIMITED'                     : 'Sandeep',
+  'JARIWALA SALES OFFICE (OM GALAXY)'                  : 'Sandeep',
+  'Kasara construction Office'                         : 'Sandeep',
+  'KASARA SALES OFFICE'                                : 'Sandeep',
+  'KEY INTERIORS - PROJECT OFFICE'                     : 'Sandeep',
+  'KEYHEIGHT REALTORS PRIVATE LIMITED (CLIFF PROJECT)' : 'Sandeep',
+  'LA Familia Porta Cabin'                             : 'Sandeep',
+  'LA REVE'                                            : 'Sandeep',
+  'LA VIE'                                             : 'Sandeep',
+  'LABOUR CAMP'                                        : 'Sandeep',
+  'LA-FAMILIA'                                         : 'Sandeep',
+  'LIASONING'                                          : 'Sandeep',
+  'MAYFAIR THE VIEW'                                   : 'Sandeep',
+  'NAMAN HABITAT'                                      : 'Sandeep',
+  'NATRAJ'                                             : 'Sandeep',
+  'NATRAJ - 4TH FLOOR'                                 : 'Sandeep',
+  'NATRAJ (FDE)'                                       : 'Sandeep',
+  'PANORAMA PROJECT '                                  : 'Sandeep',
+  'PANORAMA PROJECT'                                   : 'Sandeep',
+  'PARAMOUNT PROJECT OFFICE'                           : 'Sandeep',
+  'PARAMOUNT REHAB PROJECT OFFICE'                     : 'Sandeep',
+  'PARAMOUNT SALES OFFICE'                             : 'Sandeep',
+  'PARKMIST'                                           : 'Sandeep',
+  'PIRAMAL REALTY- LOWER PAREL'                        : 'Sandeep',
+  'PRIVE PROJECT OFFICE'                               : 'Sandeep',
+  'PRIVE SALES OFFICE'                                 : 'Sandeep',
+  'RAJSHREE POLYPACK KACHIGAM - UNIT 3'                : 'Sandeep',
+  'RAJSHREE POLYPACK LTD (UNIT - II)'                  : 'Sandeep',
+  'Registration office Worli'                          : 'Sandeep',
+  'RESERVE SALES OFFICE'                               : 'Sandeep',
+  'Rustomjee Bandstand Project'                        : 'Sandeep',
+  'RUSTOMJEE BELLA SALES'                              : 'Sandeep',
+  'RUSTOMJEE BELLE-VIE KASARA SALES OFFICE'            : 'Sandeep',
+  'Rustomjee Estoria wadala'                           : 'Sandeep',
+  'Rustomjee GTB Nagar Project'                        : 'Sandeep',
+  'SAGAR TARANG - VERSOVA'                             : 'Sandeep',
+  'SIMSON PHARMA LTD'                                  : 'Sandeep',
+  'Social Housing Project'                             : 'Sandeep',
+  'STELLA PROJECT OFFICE'                              : 'Sandeep',
+  'STELLA SALES OFFICE'                                : 'Sandeep',
+  'TELE CALLER OFFICE'                                 : 'Sandeep',
+  'VERDANT VISTAS'                                     : 'Sandeep',
+  'Vista Bay Sales (Juliet House)'                     : 'Sandeep',
+  'WIPRO WATER -AIROLI'                                : 'Sandeep',
+  // safety aliases for old name variants
+  'ASHIANA SALES OFFICE'                               : 'Sandeep',
+  'AVENUE D1 PROJECT OFFICE'                           : 'Sandeep',
+  'ESTORIA  SALES OFFICE(Porta Cabin Wadala)'          : 'Sandeep',
+  'ESTORIA SALES OFFICE(Porta Cabin Wadala)'           : 'Sandeep',
+  'NAMAN HABITAT POSSESSION'                           : 'Sandeep',
+  'PIRAMAL MAHALAXMI'                                  : 'Sandeep',
+  'RUSTOMJEE AURELIA -1 CO-OPERATIVE HOUSING SOCIETY'  : 'Sandeep'
 };
 
+// ════════════════════════════════════════════════════════════
+// ACTION TEMPLATES
+// ════════════════════════════════════════════════════════════
 var ACTIONS = {
-  zero:     {label:'Zero attendance — immediate escalation',cls:'zero',color:'#791F1F',steps:['Call site supervisor immediately','Confirm if site is operational','Document reason and escalate','Update system with reason code']},
-  critical: {label:'Critical — below 65%',cls:'critical',color:'#A32D2D',steps:['Escalate to site manager & HR today','Mandatory daily check-in call','Root cause analysis within 24 hours','Corrective action plan required']},
-  warning:  {label:'Warning — 65% to 75%',cls:'warning',color:'#854F0B',steps:['Notify site manager in writing','Bi-daily attendance review for 7 days','Issue warning notice to supervisor','Corrective action plan within 48 hours']},
-  watch:    {label:'Watch — 75% to 85%',cls:'watch',color:'#633806',steps:['Flag to site supervisor — target 85%+','Weekly review for next 2 weeks','Monitor daily — escalate if drops below 75%']}
+  zero    : {label:'Zero attendance — immediate escalation', cls:'zero',     color:'#791F1F', steps:['Call site supervisor immediately','Confirm if site is operational','Document reason and escalate','Update system with reason code']},
+  critical: {label:'Critical — below 65%',                  cls:'critical',  color:'#A32D2D', steps:['Escalate to site manager & HR today','Mandatory daily check-in call','Root cause analysis within 24 hours','Corrective action plan required']},
+  warning : {label:'Warning — 65% to 75%',                  cls:'warning',   color:'#854F0B', steps:['Notify site manager in writing','Bi-daily attendance review for 7 days','Issue warning notice to supervisor','Corrective action plan within 48 hours']},
+  watch   : {label:'Watch — 75% to 85%',                    cls:'watch',     color:'#633806', steps:['Flag to site supervisor — target 85%+','Weekly review for next 2 weeks','Monitor daily — escalate if drops below 75%']}
 };
 
+// ════════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════════
 function gc(p){if(p===0)return'#791F1F';if(p<65)return'#E24B4A';if(p<75)return'#EF9F27';if(p<85)return'#F9CB42';return'#639922';}
 function gst(p){return p===0?'zero':p<65?'critical':p<75?'warning':p<85?'watch':'good';}
 function bl(s){return{zero:'bz',critical:'bc',warning:'bw',watch:'bwt',good:'bg'}[s]||'bg';}
@@ -325,36 +336,39 @@ var chartInst = {};
 var liveData  = null;
 var activeOps = 'Deepak';
 
-function getOps(siteName) {
-  if (SITE_OPS_MAP[siteName]) return SITE_OPS_MAP[siteName];
-  var lower = siteName.toLowerCase().trim();
-  for (var k in SITE_OPS_MAP) {
-    if (k.toLowerCase().trim() === lower) return SITE_OPS_MAP[k];
-  }
+function getOps(name) {
+  if (SITE_OPS_MAP[name]) return SITE_OPS_MAP[name];
+  var lo = name.toLowerCase().trim();
+  for (var k in SITE_OPS_MAP) { if (k.toLowerCase().trim() === lo) return SITE_OPS_MAP[k]; }
   return '';
 }
 
-// ── DATA LOADING ──────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+// DATA LOADING — reads from Apps Script Web App
+// Live Feed keys: ops_gauri_pct, ops_prashant_pct, etc.
+// ════════════════════════════════════════════════════════════
 function loadData() {
   document.getElementById('screen-loading').style.display = 'flex';
   document.getElementById('dashboard').style.display = 'none';
-
   fetch(WEB_APP_URL + '?_t=' + Date.now())
     .then(function(r){ return r.json(); })
     .then(function(kv){
       var data = {
-        report_date:     kv['report_date'] || '',
-        overall_pct:     parseFloat(kv['overall_pct'])     || 0,
+        report_date    : kv['report_date'] || '',
+        overall_pct    : parseFloat(kv['overall_pct'])     || 0,
         overall_present: parseInt(kv['overall_present'])   || 0,
-        overall_deploy:  parseInt(kv['overall_deploy'])    || 0,
+        overall_deploy : parseInt(kv['overall_deploy'])    || 0,
         ops: {}, sites: []
       };
+      // Build per-ops data from Live Feed keys
+      // e.g. "Gauri" → key prefix "ops_gauri"
+      // e.g. "Deepak M" → key prefix "ops_deepak_m"
       OPS_NAMES.forEach(function(n){
         var p = 'ops_' + n.replace(/\s+/g,'_').toLowerCase();
         data.ops[n] = {
-          pct:     parseFloat(kv[p+'_pct'])   || 0,
+          pct    : parseFloat(kv[p+'_pct'])   || 0,
           present: parseInt(kv[p+'_present']) || 0,
-          deploy:  parseInt(kv[p+'_deploy'])  || 0
+          deploy : parseInt(kv[p+'_deploy'])  || 0
         };
       });
       var sd = kv['sites_data'] || '';
@@ -362,14 +376,13 @@ function loadData() {
         sd.split('~').forEach(function(s){
           var p = s.split('|');
           if (p.length >= 5) {
-            var sn = p[0];
             data.sites.push({
-              site:    sn,
+              site   : p[0],
               present: parseInt(p[1])   || 0,
-              deploy:  parseInt(p[2])   || 0,
-              pct:     parseFloat(p[3]) || 0,
-              cat:     p[4],
-              ops:     getOps(sn)
+              deploy : parseInt(p[2])   || 0,
+              pct    : parseFloat(p[3]) || 0,
+              cat    : p[4],
+              ops    : getOps(p[0])
             });
           }
         });
@@ -379,20 +392,31 @@ function loadData() {
       renderDashboard(data);
     })
     .catch(function(e){
-      console.error('Error:',e);
-      document.getElementById('screen-loading').innerHTML = '<p style="color:red;font-family:sans-serif;padding:20px">Error loading data. Please refresh.</p>';
+      console.error(e);
+      document.getElementById('screen-loading').innerHTML =
+        '<p style="color:red;font-family:sans-serif;padding:20px">Error loading data. Please refresh.</p>';
     });
 }
 
-// ── RENDER ────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════════════════════
 function renderDashboard(data) {
   liveData = data;
   var dt = data.report_date
     ? new Date(data.report_date).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})
     : 'Today';
-  var bar = '<div class="update-bar"><span>Report date: <b>' + dt + '</b> &nbsp;·&nbsp; Overall: <b style="color:' + gc(data.overall_pct) + '">' + data.overall_pct + '%</b> &nbsp;·&nbsp; ' + data.overall_present.toLocaleString() + ' / ' + data.overall_deploy.toLocaleString() + ' workers</span><span style="font-size:11px;color:#73726c">Auto-refreshes every ' + AUTO_REFRESH_MINUTES + ' min</span></div>';
-  ['sc','lg','cp'].forEach(function(id){ var el = document.getElementById('update-bar-'+id); if(el) el.innerHTML = bar; });
-  document.getElementById('topbar-sub').innerHTML = 'Report: ' + dt + ' &nbsp;·&nbsp; ' + data.sites.length + ' sites &nbsp;·&nbsp; live';
+  var bar = '<div class="update-bar"><span>Report date: <b>' + dt +
+    '</b> &nbsp;·&nbsp; Overall: <b style="color:' + gc(data.overall_pct) + '">' + data.overall_pct +
+    '%</b> &nbsp;·&nbsp; ' + data.overall_present.toLocaleString() + ' / ' +
+    data.overall_deploy.toLocaleString() + ' workers</span>' +
+    '<span style="font-size:11px;color:#73726c">Auto-refreshes every ' + AUTO_REFRESH_MINUTES + ' min</span></div>';
+  ['sc','lg','cp'].forEach(function(id){
+    var el = document.getElementById('update-bar-'+id);
+    if (el) el.innerHTML = bar;
+  });
+  document.getElementById('topbar-sub').innerHTML =
+    'Report: ' + dt + ' &nbsp;·&nbsp; ' + data.sites.length + ' sites &nbsp;·&nbsp; live';
   buildScorecards(data);
 }
 
@@ -403,29 +427,35 @@ function buildOpsPortfolio(data) {
     var zero=0,crit=0,warn=0,watch=0,good=0;
     sites.forEach(function(s){
       var st = gst(s.pct);
-      if(s.pct===0)            zero++;
-      else if(st==='critical') crit++;
-      else if(st==='warning')  warn++;
-      else if(st==='watch')    watch++;
-      else                     good++;
+      if      (s.pct===0)        zero++;
+      else if (st==='critical')  crit++;
+      else if (st==='warning')   warn++;
+      else if (st==='watch')     watch++;
+      else                       good++;
     });
     var op = data.ops[name] || {};
-    port[name] = { name:name, sites:sites, total_sites:sites.length,
+    port[name] = {
+      name:name, sites:sites, total_sites:sites.length,
       mtd_pct:op.pct||0, present:op.present||0, deploy:op.deploy||0,
-      zero:zero, critical:crit, warning:warn, watch:watch, good:good };
+      zero:zero, critical:crit, warning:warn, watch:watch, good:good
+    };
   });
   return port;
 }
 
-// ── SCORECARD VIEW ────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+// SCORECARD VIEW
+// ════════════════════════════════════════════════════════════
 function buildScorecards(data) {
   var port   = buildOpsPortfolio(data);
   var sorted = OPS_NAMES.slice().sort(function(a,b){ return port[b].mtd_pct - port[a].mtd_pct; });
   var ranks  = ['1st','2nd','3rd','4th','5th','6th'];
 
   document.getElementById('sc-row').innerHTML = sorted.map(function(name,i){
-    var o = port[name];
-    return '<div class="sc'+(name===activeOps?' selected':'')+'" onclick="selectOps(\''+name.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')\" style="border-top-color:'+gc(o.mtd_pct)+'">' +
+    var o   = port[name];
+    var key = name.replace(/'/g,"\\'");
+    return '<div class="sc'+(name===activeOps?' selected':'')+
+      '" onclick="selectOps(\''+key+'\')" style="border-top-color:'+gc(o.mtd_pct)+'">' +
       '<div class="rank">'+ranks[i]+'</div>' +
       '<div class="sc-name">'+name+'</div>' +
       '<div class="big" style="color:'+gc(o.mtd_pct)+'">'+o.mtd_pct+'%</div>' +
@@ -435,7 +465,8 @@ function buildScorecards(data) {
         (o.critical?'<span class="sp" style="background:#FCEBEB;color:#A32D2D">'+o.critical+' critical</span>':'') +
         (o.warning ?'<span class="sp" style="background:#FAEEDA;color:#854F0B">'+o.warning+' warning</span>':'') +
         (o.watch   ?'<span class="sp" style="background:#FFF9E6;color:#633806">'+o.watch+' watch</span>':'') +
-        (!o.zero&&!o.critical&&!o.warning&&!o.watch?'<span class="sp" style="background:#EAF3DE;color:#3B6D11">All good</span>':'') +
+        (!o.zero&&!o.critical&&!o.warning&&!o.watch
+          ?'<span class="sp" style="background:#EAF3DE;color:#3B6D11">All good</span>':'') +
       '</div></div>';
   }).join('');
 
@@ -451,39 +482,56 @@ function buildPanel(name, o) {
   var crit  = o.sites.filter(function(s){ return s.pct>0&&s.pct<65; });
   var warn  = o.sites.filter(function(s){ return s.pct>=65&&s.pct<75; });
   var watch = o.sites.filter(function(s){ return s.pct>=75&&s.pct<85; });
-  var noAction = (zero.length+crit.length+warn.length+watch.length) === 0;
-  var key = name.replace(/\s/g,'_');
+  var noAct = (zero.length+crit.length+warn.length+watch.length)===0;
+  var key   = name.replace(/\s/g,'_');
 
-  function ab(k, sites) {
-    if (!sites.length) return '';
+  function ab(k, arr) {
+    if (!arr.length) return '';
     var info = ACTIONS[k];
-    return '<div class="ab ab-'+k+'"><div class="ab-header"><div class="ab-title" style="color:'+info.color+'">'+info.label+'</div><span class="ab-count">'+sites.length+' site'+(sites.length>1?'s':'')+'</span></div>' +
+    return '<div class="ab ab-'+k+'">' +
+      '<div class="ab-header"><div class="ab-title" style="color:'+info.color+'">'+info.label+'</div>' +
+      '<span class="ab-count">'+arr.length+' site'+(arr.length>1?'s':'')+'</span></div>' +
       '<ul class="action-list">'+info.steps.map(function(a){return'<li>'+a+'</li>';}).join('')+'</ul>' +
-      '<div class="site-chips">'+sites.sort(function(a,b){return a.pct-b.pct;}).map(function(s){
+      '<div class="site-chips">'+arr.sort(function(a,b){return a.pct-b.pct;}).map(function(s){
         return '<span class="chip chip-'+k+'"><span class="chip-pct">'+s.pct+'%</span>'+s.site+'</span>';
       }).join('')+'</div></div>';
   }
 
   return '<div class="ops-panel" id="panel-'+key+'">' +
-    '<div class="panel-header"><div><div class="ph-name">'+name+'</div><div class="ph-sub">Operations Manager &nbsp;·&nbsp; '+o.total_sites+' sites</div></div>' +
-    '<div class="ph-stats">' +
-      '<div class="ph-stat"><div class="lbl">Attendance</div><div class="val" style="color:'+gc(o.mtd_pct)+'">'+o.mtd_pct+'%</div></div>' +
-      '<div class="ph-stat"><div class="lbl">Present</div><div class="val">'+o.present+'</div></div>' +
-      '<div class="ph-stat"><div class="lbl">Sites needing action</div><div class="val" style="color:'+(noAction?'#3B6D11':'#E24B4A')+'">'+(zero.length+crit.length+warn.length+watch.length)+'</div></div>' +
-    '</div></div>' +
+    '<div class="panel-header">' +
+      '<div><div class="ph-name">'+name+'</div>' +
+      '<div class="ph-sub">Operations Manager &nbsp;·&nbsp; '+o.total_sites+' sites</div></div>' +
+      '<div class="ph-stats">' +
+        '<div class="ph-stat"><div class="lbl">Attendance</div><div class="val" style="color:'+gc(o.mtd_pct)+'">'+o.mtd_pct+'%</div></div>' +
+        '<div class="ph-stat"><div class="lbl">Present</div><div class="val">'+o.present+'</div></div>' +
+        '<div class="ph-stat"><div class="lbl">Sites needing action</div>' +
+          '<div class="val" style="color:'+(noAct?'#3B6D11':'#E24B4A')+'">'+(zero.length+crit.length+warn.length+watch.length)+'</div></div>' +
+      '</div>' +
+    '</div>' +
     '<div class="two-col">' +
       '<div class="card"><h3>Site distribution — '+name+'</h3><div class="cw"><canvas id="donut-'+key+'"></canvas></div></div>' +
       '<div class="card"><h3>Sites by status — '+name+'</h3><div class="cw"><canvas id="bar-'+key+'"></canvas></div></div>' +
     '</div>' +
     '<div class="action-blocks">'+ab('zero',zero)+ab('critical',crit)+ab('warning',warn)+ab('watch',watch)+
-      (noAction?'<div style="background:#EAF3DE;border-radius:10px;padding:18px;text-align:center;color:#3B6D11;font-size:14px;font-weight:700">All '+o.total_sites+' sites performing above 85% — no action required</div>':'') +
+      (noAct?'<div style="background:#EAF3DE;border-radius:10px;padding:18px;text-align:center;color:#3B6D11;font-size:14px;font-weight:700">All '+o.total_sites+' sites performing above 85% — no action required</div>':'')+
     '</div>' +
-    '<div class="card"><h3>All '+o.total_sites+' sites — '+name+'</h3><div class="tw"><table class="site-tbl"><thead><tr><th>#</th><th>Site name</th><th>Present</th><th>Deployment</th><th>Attendance %</th><th>Progress</th><th>Status</th></tr></thead><tbody>' +
-    o.sites.slice().sort(function(a,b){return a.pct-b.pct;}).map(function(s,i){
-      var st = gst(s.pct);
-      return '<tr><td style="color:#73726c">'+(i+1)+'</td><td style="font-weight:500;max-width:240px;word-break:break-word">'+s.site+'</td><td style="text-align:right">'+s.present+'</td><td style="text-align:right">'+s.deploy+'</td><td style="font-weight:800;color:'+gc(s.pct)+';text-align:right">'+s.pct+'%</td><td><div class="bar-w"><div class="bar"><div class="bar-f" style="width:'+Math.min(s.pct,100)+'%;background:'+gc(s.pct)+'"></div></div></div></td><td><span class="badge '+bl(st)+'">'+sl(st)+'</span></td></tr>';
-    }).join('') +
-    '</tbody></table></div></div></div>';
+    '<div class="card"><h3>All '+o.total_sites+' sites — '+name+'</h3>' +
+      '<div class="tw"><table class="site-tbl"><thead><tr>' +
+        '<th>#</th><th>Site name</th><th>Present</th><th>Deployment</th><th>Attendance %</th><th>Progress</th><th>Status</th>' +
+      '</tr></thead><tbody>' +
+      o.sites.slice().sort(function(a,b){return a.pct-b.pct;}).map(function(s,i){
+        var st = gst(s.pct);
+        return '<tr>' +
+          '<td style="color:#73726c">'+(i+1)+'</td>' +
+          '<td style="font-weight:500;max-width:240px;word-break:break-word">'+s.site+'</td>' +
+          '<td style="text-align:right">'+s.present+'</td>' +
+          '<td style="text-align:right">'+s.deploy+'</td>' +
+          '<td style="font-weight:800;color:'+gc(s.pct)+';text-align:right">'+s.pct+'%</td>' +
+          '<td><div class="bar-w"><div class="bar"><div class="bar-f" style="width:'+Math.min(s.pct,100)+'%;background:'+gc(s.pct)+'"></div></div></div></td>' +
+          '<td><span class="badge '+bl(st)+'">'+sl(st)+'</span></td>' +
+        '</tr>';
+      }).join('') +
+      '</tbody></table></div></div></div>';
 }
 
 function selectOps(name, doScroll) {
@@ -510,19 +558,31 @@ function buildPanelCharts(name, o) {
   if (chartInst[bId]) chartInst[bId].destroy();
   chartInst[dId] = new Chart(document.getElementById(dId),{
     type:'doughnut',
-    data:{labels:['Zero','Critical <65%','Warning 65-75%','Watch 75-85%','Good ≥85%'],
-          datasets:[{data:[o.zero,o.critical,o.warning,o.watch,o.good],backgroundColor:['#791F1F','#E24B4A','#EF9F27','#F9CB42','#639922'],borderWidth:0,hoverOffset:5}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:10,padding:8}}}}
+    data:{
+      labels:['Zero','Critical <65%','Warning 65-75%','Watch 75-85%','Good ≥85%'],
+      datasets:[{data:[o.zero,o.critical,o.warning,o.watch,o.good],
+        backgroundColor:['#791F1F','#E24B4A','#EF9F27','#F9CB42','#639922'],borderWidth:0,hoverOffset:5}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+      plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:10,padding:8}}}}
   });
-  var byS = [{label:'Zero',val:o.zero,color:'#791F1F'},{label:'Critical',val:o.critical,color:'#E24B4A'},{label:'Warning',val:o.warning,color:'#EF9F27'},{label:'Watch',val:o.watch,color:'#F9CB42'},{label:'Good',val:o.good,color:'#639922'}].filter(function(x){return x.val>0;});
+  var byS=[{l:'Zero',v:o.zero,c:'#791F1F'},{l:'Critical',v:o.critical,c:'#E24B4A'},
+           {l:'Warning',v:o.warning,c:'#EF9F27'},{l:'Watch',v:o.watch,c:'#F9CB42'},
+           {l:'Good',v:o.good,c:'#639922'}].filter(function(x){return x.v>0;});
   chartInst[bId] = new Chart(document.getElementById(bId),{
     type:'bar',
-    data:{labels:byS.map(function(x){return x.label;}),datasets:[{data:byS.map(function(x){return x.val;}),backgroundColor:byS.map(function(x){return x.color;}),borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}
+    data:{labels:byS.map(function(x){return x.l;}),
+      datasets:[{data:byS.map(function(x){return x.v;}),
+        backgroundColor:byS.map(function(x){return x.c;}),borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}},
+              x:{ticks:{font:{size:11}},grid:{display:false}}}}
   });
 }
 
-// ── LEAGUE TABLE ──────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+// LEAGUE TABLE
+// ════════════════════════════════════════════════════════════
 function buildLeague(data) {
   var port   = buildOpsPortfolio(data);
   var sorted = OPS_NAMES.slice().sort(function(a,b){ return port[b].mtd_pct - port[a].mtd_pct; });
@@ -531,35 +591,46 @@ function buildLeague(data) {
     function seg(n,c){ return n?'<div class="lr-seg" style="flex:'+n+';background:'+c+'"></div>':''; }
     return '<div class="league-row" onclick="showView(\'scorecard\',null);setTimeout(function(){selectOps(\''+name.replace(/'/g,"\\'")+'\');},50)">' +
       '<div class="lr-rank">'+(i+1)+'</div>' +
-      '<div><div class="lr-name">'+name+'</div>' +
-      '<div class="lr-meta">'+o.total_sites+' sites &nbsp;·&nbsp; '+o.present+' / '+o.deploy+' workers</div>' +
-      '<div class="lr-bar-row">'+seg(o.zero,'#791F1F')+seg(o.critical,'#E24B4A')+seg(o.warning,'#EF9F27')+seg(o.watch,'#F9CB42')+seg(o.good,'#639922')+'</div>' +
-      '<div style="display:flex;gap:10px;margin-top:4px;font-size:10px">' +
-        (o.zero    ?'<span style="color:#791F1F;font-weight:700">'+o.zero+' zero</span>':'') +
-        (o.critical?'<span style="color:#A32D2D;font-weight:700">'+o.critical+' critical</span>':'') +
-        (o.warning ?'<span style="color:#854F0B;font-weight:700">'+o.warning+' warning</span>':'') +
-        (o.watch   ?'<span style="color:#633806;font-weight:700">'+o.watch+' watch</span>':'') +
-        '<span style="color:#3B6D11;font-weight:700">'+o.good+' good</span>' +
-      '</div></div>' +
-      '<div><div class="lr-pct" style="color:'+gc(o.mtd_pct)+'">'+o.mtd_pct+'%</div><div class="lr-sub">attendance</div></div></div>';
+      '<div>' +
+        '<div class="lr-name">'+name+'</div>' +
+        '<div class="lr-meta">'+o.total_sites+' sites &nbsp;·&nbsp; '+o.present+' / '+o.deploy+' workers</div>' +
+        '<div class="lr-bar-row">'+seg(o.zero,'#791F1F')+seg(o.critical,'#E24B4A')+seg(o.warning,'#EF9F27')+seg(o.watch,'#F9CB42')+seg(o.good,'#639922')+'</div>' +
+        '<div style="display:flex;gap:10px;margin-top:4px;font-size:10px">' +
+          (o.zero    ?'<span style="color:#791F1F;font-weight:700">'+o.zero+' zero</span>':'') +
+          (o.critical?'<span style="color:#A32D2D;font-weight:700">'+o.critical+' critical</span>':'') +
+          (o.warning ?'<span style="color:#854F0B;font-weight:700">'+o.warning+' warning</span>':'') +
+          (o.watch   ?'<span style="color:#633806;font-weight:700">'+o.watch+' watch</span>':'') +
+          '<span style="color:#3B6D11;font-weight:700">'+o.good+' good</span>' +
+        '</div>' +
+      '</div>' +
+      '<div><div class="lr-pct" style="color:'+gc(o.mtd_pct)+'">'+o.mtd_pct+'%</div><div class="lr-sub">attendance</div></div>' +
+    '</div>';
   }).join('');
-
   if (chartInst['all-trend']) chartInst['all-trend'].destroy();
   chartInst['all-trend'] = new Chart(document.getElementById('all-trend-chart'),{
     type:'bar',
-    data:{labels:OPS_NAMES,datasets:[{label:'Attendance %',data:OPS_NAMES.map(function(n){return port[n].mtd_pct;}),backgroundColor:OPS_NAMES.map(function(n){return gc(port[n].mtd_pct);}),borderRadius:5}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:60,max:100,ticks:{callback:function(v){return v+'%';},font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}
+    data:{labels:OPS_NAMES,
+      datasets:[{label:'Attendance %',
+        data:OPS_NAMES.map(function(n){return port[n].mtd_pct;}),
+        backgroundColor:OPS_NAMES.map(function(n){return gc(port[n].mtd_pct);}),borderRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{min:60,max:100,ticks:{callback:function(v){return v+'%';},font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'}},
+              x:{ticks:{font:{size:11}},grid:{display:false}}}}
   });
 }
 
-// ── COMPARE VIEW ──────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+// COMPARE VIEW
+// ════════════════════════════════════════════════════════════
 function buildCompare(data) {
   var port   = buildOpsPortfolio(data);
   var sorted = OPS_NAMES.slice().sort(function(a,b){ return port[b].mtd_pct - port[a].mtd_pct; });
 
   document.getElementById('compare-cards').innerHTML = sorted.map(function(name){
     var o = port[name];
-    return '<div class="cg"><div class="cg-name">'+name+'</div><div class="cg-big" style="color:'+gc(o.mtd_pct)+'">'+o.mtd_pct+'%</div>' +
+    return '<div class="cg">' +
+      '<div class="cg-name">'+name+'</div>' +
+      '<div class="cg-big" style="color:'+gc(o.mtd_pct)+'">'+o.mtd_pct+'%</div>' +
       '<div class="cg-bar"><div class="cg-fill" style="width:'+o.mtd_pct+'%;background:'+gc(o.mtd_pct)+'"></div></div>' +
       '<div class="cg-breakdown">' +
         '<div class="cg-b" style="background:#FCEBEB;color:#A32D2D">'+(o.zero+o.critical)+' critical</div>' +
@@ -578,29 +649,45 @@ function buildCompare(data) {
       {label:'Watch',        data:sorted.map(function(n){return port[n].watch;}),                backgroundColor:'#F9CB42',borderRadius:2},
       {label:'Good',         data:sorted.map(function(n){return port[n].good;}),                 backgroundColor:'#639922',borderRadius:2}
     ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11},boxWidth:12,padding:8}}},scales:{x:{stacked:true,ticks:{font:{size:11}},grid:{display:false}},y:{stacked:true,ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'}}}}
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{font:{size:11},boxWidth:12,padding:8}}},
+      scales:{x:{stacked:true,ticks:{font:{size:11}},grid:{display:false}},
+              y:{stacked:true,ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'}}}}
   });
 
-  var tableHTML = '<table class="site-tbl"><thead><tr><th>Ops manager</th><th>Site name</th><th>%</th><th>Status</th><th>Action required</th></tr></thead><tbody>';
+  var html = '<table class="site-tbl"><thead><tr><th>Ops manager</th><th>Site name</th><th>%</th><th>Status</th><th>Action required</th></tr></thead><tbody>';
   sorted.forEach(function(name){
-    var needsAction = port[name].sites.filter(function(s){return gst(s.pct)!=='good';}).sort(function(a,b){return a.pct-b.pct;});
-    if (!needsAction.length) return;
-    needsAction.forEach(function(s,i){
-      var st = gst(s.pct), info = ACTIONS[st]||ACTIONS.watch;
-      tableHTML += '<tr><td style="font-weight:700;white-space:nowrap">'+(i===0?name:'')+'</td><td style="max-width:220px;word-break:break-word;font-weight:500">'+s.site+'</td><td style="font-weight:800;color:'+gc(s.pct)+'">'+s.pct+'%</td><td><span class="badge '+bl(st)+'">'+sl(st)+'</span></td><td style="font-size:11px;color:#444">'+info.steps[0]+'</td></tr>';
+    var need = port[name].sites.filter(function(s){return gst(s.pct)!=='good';}).sort(function(a,b){return a.pct-b.pct;});
+    if (!need.length) return;
+    need.forEach(function(s,i){
+      var st=gst(s.pct), info=ACTIONS[st]||ACTIONS.watch;
+      html += '<tr>' +
+        '<td style="font-weight:700;white-space:nowrap">'+(i===0?name:'')+'</td>' +
+        '<td style="max-width:220px;word-break:break-word;font-weight:500">'+s.site+'</td>' +
+        '<td style="font-weight:800;color:'+gc(s.pct)+'">'+s.pct+'%</td>' +
+        '<td><span class="badge '+bl(st)+'">'+sl(st)+'</span></td>' +
+        '<td style="font-size:11px;color:#444">'+info.steps[0]+'</td>' +
+      '</tr>';
     });
   });
-  tableHTML += '</tbody></table>';
-  document.getElementById('compare-table').innerHTML = tableHTML;
+  html += '</tbody></table>';
+  document.getElementById('compare-table').innerHTML = html;
 }
 
-// ── VIEW SWITCHING ────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+// VIEW SWITCHING
+// ════════════════════════════════════════════════════════════
 function showView(id, btn) {
   document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
   document.querySelectorAll('.nav-pill').forEach(function(b){ b.classList.remove('active'); });
   document.getElementById('v-'+id).classList.add('active');
-  if (btn) btn.classList.add('active');
-  else { var m={scorecard:0,league:1,compare:2}; var pills=document.querySelectorAll('.nav-pill'); if(pills[m[id]])pills[m[id]].classList.add('active'); }
+  if (btn) {
+    btn.classList.add('active');
+  } else {
+    var pills = document.querySelectorAll('.nav-pill');
+    var m = {scorecard:0,league:1,compare:2};
+    if (pills[m[id]]) pills[m[id]].classList.add('active');
+  }
   if (id==='league'  && liveData) buildLeague(liveData);
   if (id==='compare' && liveData) buildCompare(liveData);
 }
@@ -622,5 +709,6 @@ if (!sessionStorage.getItem("crest_auth")) {
 </script>
 </body>
 </html>
+
 
 
