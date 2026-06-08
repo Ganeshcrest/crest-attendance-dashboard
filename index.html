@@ -154,164 +154,163 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <script>
 // ════════════════════════════════════════════════════════════
-// CONFIG
+// CONFIG — update WEB_APP_URL after re-deploying Apps Script
 // ════════════════════════════════════════════════════════════
-var WEB_APP_URL         = 'https://script.google.com/macros/s/AKfycbwYfXw5c5zwEPxdJ-gh3TAZ2tjqEAj5ZCCVBW3Yz9M08Zmt4_T3U904lm1uM4vHNcr5hA/exec';
+var WEB_APP_URL          = 'https://script.google.com/macros/s/AKfycbwYfXw5c5zwEPxdJ-gh3TAZ2tjqEAj5ZCCVBW3Yz9M08Zmt4_T3U904lm1uM4vHNcr5hA/exec';
 var AUTO_REFRESH_MINUTES = 30;
 
-// ── CORRECT ops managers as of April 2026 ──
-// Neeru        → REPLACED by Gauri
-// Prashant Sonavane → RENAMED to Prashant
-var OPS_NAMES  = ['Deepak','Deepak M','Gauri','Prashant','Raees','Sandeep'];
+// ── Ops managers — 6 total as of June 2026 ──
+// Raees removed; Anumit added (4 sites: Dosti Oak, Grand Pallazo, NEWA BHAKTI, PARKMIST)
+var OPS_NAMES  = ['Deepak', 'Deepak M', 'Gauri', 'Prashant', 'Anumit', 'Sandeep'];
 var OPS_COLORS = {
   'Deepak'  : '#1a6b3c',
   'Deepak M': '#2a9d5c',
   'Gauri'   : '#185FA5',
   'Prashant': '#7F77DD',
-  'Raees'   : '#854F0B',
+  'Anumit'  : '#854F0B',
   'Sandeep' : '#993556'
 };
 
 // ════════════════════════════════════════════════════════════
-// SITE → OPS MAP  (verified directly from Excel Apr 2026)
-// Deepak    5 sites
-// Deepak M  7 sites
-// Gauri    12 sites  ← replaces Neeru
-// Prashant 11 sites  ← renamed from Prashant Sonavane
-// Raees     3 sites
-// Sandeep  71 sites
+// SITE → OPS MAP  (rebuilt directly from Excel 26 May - 25 Jun 2026)
+// Deepak   : 4 sites
+// Deepak M : 6 sites
+// Gauri    : 12 sites
+// Prashant : 12 sites
+// Anumit   : 4 sites
+// Sandeep  : 80 sites
 // ════════════════════════════════════════════════════════════
 var SITE_OPS_MAP = {
-
-  // ── Deepak (5) ──────────────────────────────────────────
-  'CROWN SALES - PMS'         : 'Deepak',
-  'CROWN TOWER C'             : 'Deepak',
-  'ELEMENTS SALES'            : 'Deepak',
-  'NAMAN PREMIER E-WING'      : 'Deepak',
-  'RUSTOMJEE AZZIANO CHS LTD' : 'Deepak',
-
-  // ── Deepak M (7) ────────────────────────────────────────
-  'PARAMOUNT SALES'                    : 'Deepak M',
-  'Reserve Society'                    : 'Deepak M',
-  'RUSTOMJEE CLEON PMS'                : 'Deepak M',
-  'RUSTOMJEE SEASONS - D WING PROJECT' : 'Deepak M',
-  'SEASONS SALES - PMS'                : 'Deepak M',
-  'SUMMIT (VALET)'                     : 'Deepak M',
-  'SUMMIT SALES - PMS'                 : 'Deepak M',
-
-  // ── Gauri (12) — NEW, replaced Neeru ────────────────────
-  'AANGAN BUILDING'                                  : 'Gauri',
-  'BELLA PMS'                                        : 'Gauri',
-  'CENTRAL PARK'                                     : 'Gauri',
-  'GANGA JAMUNA COOPERATIVE HOUSING SOCIETY LIMITED' : 'Gauri',
-  'GARDEN 6 PMS'                                     : 'Gauri',
-  'LA. FONTAINE - PMS'                               : 'Gauri',
-  'PALI PARISHRAM -PMS SITE'                         : 'Gauri',
-  'RUNWAL FORESTS TOWERS CO-OP HOUSING LTD'          : 'Gauri',
-  'Rustomjee Yazarina 03'                            : 'Gauri',
-  'THE PALACIMO CO OP HSG SOCIETY LTD'               : 'Gauri',
-  'YAZARINA ONE CHS LIMITED - RUSTOMJEE'             : 'Gauri',
-  'ZINNIA'                                           : 'Gauri',
-
-  // ── Prashant (11) — renamed from Prashant Sonavane ──────
-  'AKASHDEEP BUNGALOW'                       : 'Prashant',
-  'Applaud 38'                               : 'Prashant',
-  'Corporate Avenue - Andheri'               : 'Prashant',
+  '44 EMB STUDIO': 'Sandeep',
+  '72 EMPIRE': 'Sandeep',
+  '72 EMPIRE (FDE)': 'Sandeep',
+  'AANGAN BUILDING': 'Gauri',
+  'ADEN - SAI DARSHAN': 'Sandeep',
+  'ADEN SALES OFFICE': 'Sandeep',
+  'Aeka Advisors India LLP': 'Sandeep',
+  'AKASHDEEP BUNGALOW': 'Prashant',
+  'ALEMBIC LIMITED (ficus Court)': 'Sandeep',
+  'Applaud 38': 'Prashant',
+  'Ashiana / Ocean Vista Sales Office': 'Sandeep',
+  'ASHIANA PROJECT': 'Sandeep',
+  'ASHIKA STOCK BROKING LTD': 'Sandeep',
+  'ATUL PROJECTS': 'Sandeep',
+  'BASANT PARK BALMORAL PROJECT OFFICE': 'Sandeep',
+  'BASANT PARK SALES OFFICE': 'Sandeep',
+  'BEAUTY ESSENTIALS - BANDRA': 'Sandeep',
+  'BELLA PMS': 'Gauri',
+  'BHILOSA INDUSTRIES PVT LTD': 'Sandeep',
+  'BHILOSA UNIT 2 NAROLI': 'Sandeep',
+  'Billing Department': 'Sandeep',
+  'CEC SALES OFFICE- THANE': 'Sandeep',
+  'CELIO RETAIL PRIVATE LIMITED': 'Sandeep',
+  'CENTRAL PARK 8TH FLOOR': 'Sandeep',
+  'CK PLANT BHILOSA': 'Sandeep',
+  'CLEON PROJECT OFFICE': 'Sandeep',
+  'CONSTRUCTION OFFICE-CO': 'Sandeep',
+  'Corporate Avenue - Andheri': 'Prashant',
+  'CRESCENT SALES': 'Sandeep',
+  'CRESENT PROJECT': 'Sandeep',
+  'CROWN PROJECT': 'Sandeep',
+  'CROWN PROJECT OFFICE': 'Sandeep',
+  'CROWN SALES - PMS': 'Deepak',
+  'CROWN SALES OFFICE': 'Sandeep',
+  'CROWN TOWER C': 'Deepak',
+  'DAKLE INDUSTRIAL PLASTIC': 'Sandeep',
+  'DHRUVWADI PROJECT OFFICE': 'Sandeep',
+  'DOSTI OAK (DOSTI WEST COUNTY) CHS': 'Anumit',
+  'dummy': 'Sandeep',
+  'ELEMENTS SALES': 'Deepak',
+  'GANGA JAMUNA COOPERATIVE HOUSING SOCIETY LIMITED': 'Gauri',
+  'GARDEN 6 PMS': 'Gauri',
+  'Grand Pallazo': 'Anumit',
   'GURUKRUPA REALCOM INFRASTRUCTURE DEVELOPERS': 'Prashant',
-  'Horizon Bhandup PMS'                      : 'Prashant',
-  'Midtown Promesa'                          : 'Prashant',
-  'Runwal Bliss Club house'                  : 'Prashant',
-  'Runwal fifth Avenue'                      : 'Prashant',
-  'Runwal Garden Heights (BCAM)'             : 'Prashant',
-  'RUSTOMJEE ERIKA PMS'                      : 'Prashant',
-  'WaterFront Tower Private Limited'         : 'Prashant',
-
-  // ── Raees (3) ───────────────────────────────────────────
-  'DOSTI OAK (DOSTI WEST COUNTY) CHS' : 'Raees',
-  'Grand Pallazo'                      : 'Raees',
-  'NEWA BHAKTI KNOWLEDGE CITY'         : 'Raees',
-
-  // ── Sandeep (71) ────────────────────────────────────────
-  '72 EMPIRE'                                          : 'Sandeep',
-  '72 EMPIRE (FDE)'                                    : 'Sandeep',
-  'ADEN - SAI DARSHAN'                                 : 'Sandeep',
-  'ADEN SALES OFFICE'                                  : 'Sandeep',
-  'Aeka Advisors India LLP'                            : 'Sandeep',
-  'ALEMBIC LIMITED (ficus Court)'                      : 'Sandeep',
-  'Ashiana / Ocean Vista Sales Office'                 : 'Sandeep',
-  'ASHIANA PROJECT'                                    : 'Sandeep',
-  'ASHIKA STOCK BROKING LTD'                           : 'Sandeep',
-  'ATUL PROJECTS'                                      : 'Sandeep',
-  'BASANT PARK BALMORAL PROJECT OFFICE'                : 'Sandeep',
-  'BASANT PARK SALES OFFICE'                           : 'Sandeep',
-  'BHILOSA INDUSTRIES PVT LTD'                         : 'Sandeep',
-  'BHILOSA UNIT 2 NAROLI'                              : 'Sandeep',
-  'Billing Department'                                 : 'Sandeep',
-  'CEC SALES OFFICE- THANE'                            : 'Sandeep',
-  'CELIO RETAIL PRIVATE LIMITED'                       : 'Sandeep',
-  'CENTRAL PARK 8TH FLOOR'                             : 'Sandeep',
-  'CLEON PROJECT OFFICE'                               : 'Sandeep',
-  'CONSTRUCTION OFFICE-CO'                             : 'Sandeep',
-  'CRESCENT SALES'                                     : 'Sandeep',
-  'CRESENT PROJECT'                                    : 'Sandeep',
-  'CROWN PROJECT'                                      : 'Sandeep',
-  'CROWN PROJECT OFFICE'                               : 'Sandeep',
-  'CROWN SALES OFFICE'                                 : 'Sandeep',
-  'DAKLE INDUSTRIAL PLASTIC'                           : 'Sandeep',
-  'dummy'                                              : 'Sandeep',
-  'HORIZON BHANDUP'                                    : 'Sandeep',
-  'INGEVITY INDIA PRIVATE LIMITED'                     : 'Sandeep',
-  'JARIWALA SALES OFFICE (OM GALAXY)'                  : 'Sandeep',
-  'Kasara construction Office'                         : 'Sandeep',
-  'KASARA SALES OFFICE'                                : 'Sandeep',
-  'KEY INTERIORS - PROJECT OFFICE'                     : 'Sandeep',
-  'KEYHEIGHT REALTORS PRIVATE LIMITED (CLIFF PROJECT)' : 'Sandeep',
-  'LA Familia Porta Cabin'                             : 'Sandeep',
-  'LA REVE'                                            : 'Sandeep',
-  'LA VIE'                                             : 'Sandeep',
-  'LABOUR CAMP'                                        : 'Sandeep',
-  'LA-FAMILIA'                                         : 'Sandeep',
-  'LIASONING'                                          : 'Sandeep',
-  'MAYFAIR THE VIEW'                                   : 'Sandeep',
-  'NAMAN HABITAT'                                      : 'Sandeep',
-  'NATRAJ'                                             : 'Sandeep',
-  'NATRAJ - 4TH FLOOR'                                 : 'Sandeep',
-  'NATRAJ (FDE)'                                       : 'Sandeep',
-  'PANORAMA PROJECT '                                  : 'Sandeep',
-  'PANORAMA PROJECT'                                   : 'Sandeep',
-  'PARAMOUNT PROJECT OFFICE'                           : 'Sandeep',
-  'PARAMOUNT REHAB PROJECT OFFICE'                     : 'Sandeep',
-  'PARAMOUNT SALES OFFICE'                             : 'Sandeep',
-  'PARKMIST'                                           : 'Sandeep',
-  'PIRAMAL REALTY- LOWER PAREL'                        : 'Sandeep',
-  'PRIVE PROJECT OFFICE'                               : 'Sandeep',
-  'PRIVE SALES OFFICE'                                 : 'Sandeep',
-  'RAJSHREE POLYPACK KACHIGAM - UNIT 3'                : 'Sandeep',
-  'RAJSHREE POLYPACK LTD (UNIT - II)'                  : 'Sandeep',
-  'Registration office Worli'                          : 'Sandeep',
-  'RESERVE SALES OFFICE'                               : 'Sandeep',
-  'Rustomjee Bandstand Project'                        : 'Sandeep',
-  'RUSTOMJEE BELLA SALES'                              : 'Sandeep',
-  'RUSTOMJEE BELLE-VIE KASARA SALES OFFICE'            : 'Sandeep',
-  'Rustomjee Estoria wadala'                           : 'Sandeep',
-  'Rustomjee GTB Nagar Project'                        : 'Sandeep',
-  'SAGAR TARANG - VERSOVA'                             : 'Sandeep',
-  'SIMSON PHARMA LTD'                                  : 'Sandeep',
-  'Social Housing Project'                             : 'Sandeep',
-  'STELLA PROJECT OFFICE'                              : 'Sandeep',
-  'STELLA SALES OFFICE'                                : 'Sandeep',
-  'TELE CALLER OFFICE'                                 : 'Sandeep',
-  'VERDANT VISTAS'                                     : 'Sandeep',
-  'Vista Bay Sales (Juliet House)'                     : 'Sandeep',
-  'WIPRO WATER -AIROLI'                                : 'Sandeep',
-  // safety aliases for old name variants
-  'ASHIANA SALES OFFICE'                               : 'Sandeep',
-  'AVENUE D1 PROJECT OFFICE'                           : 'Sandeep',
-  'ESTORIA  SALES OFFICE(Porta Cabin Wadala)'          : 'Sandeep',
-  'ESTORIA SALES OFFICE(Porta Cabin Wadala)'           : 'Sandeep',
-  'NAMAN HABITAT POSSESSION'                           : 'Sandeep',
-  'PIRAMAL MAHALAXMI'                                  : 'Sandeep',
-  'RUSTOMJEE AURELIA -1 CO-OPERATIVE HOUSING SOCIETY'  : 'Sandeep'
+  'HORIZON BHANDUP': 'Sandeep',
+  'Horizon Bhandup PMS': 'Prashant',
+  'INGEVITY INDIA PRIVATE LIMITED': 'Sandeep',
+  'JARIWALA SALES OFFICE (OM GALAXY)': 'Sandeep',
+  'Kasara construction Office': 'Sandeep',
+  'KASARA SALES OFFICE': 'Sandeep',
+  'KEY INTERIORS - PROJECT OFFICE': 'Sandeep',
+  'KEYHEIGHT REALTORS PRIVATE LIMITED (CLIFF PROJECT)': 'Sandeep',
+  'LA Familia Porta Cabin': 'Sandeep',
+  'LA REVE': 'Sandeep',
+  'LA VIE': 'Sandeep',
+  'LA. FONTAINE - PMS': 'Gauri',
+  'LABOUR CAMP': 'Sandeep',
+  'LA-FAMILIA': 'Sandeep',
+  'LIASONING': 'Sandeep',
+  'MAYFAIR THE VIEW': 'Sandeep',
+  'Midtown Promesa': 'Prashant',
+  'MIRAJ CINEMAS WADALA': 'Sandeep',
+  'NAMAN HABITAT': 'Sandeep',
+  'NATRAJ': 'Sandeep',
+  'NATRAJ - 4TH FLOOR': 'Sandeep',
+  'NATRAJ (FDE)': 'Sandeep',
+  'NATRAJ 8TH FLOOR': 'Sandeep',
+  'NEWA BHAKTI KNOWLEDGE CITY': 'Anumit',
+  'OZONE PG SALES OFFICE': 'Sandeep',
+  'PALI PARISHRAM -PMS SITE': 'Gauri',
+  'PANORAMA PROJECT ': 'Sandeep',
+  'PANORAMA PROJECT': 'Sandeep',
+  'PARAMOUNT PROJECT OFFICE': 'Sandeep',
+  'PARAMOUNT REHAB PROJECT OFFICE': 'Sandeep',
+  'PARAMOUNT SALES': 'Deepak M',
+  'PARAMOUNT SALES OFFICE': 'Sandeep',
+  'PARKMIST': 'Anumit',
+  'PIRAMAL REALTY- LOWER PAREL': 'Sandeep',
+  'PRIVE PROJECT OFFICE': 'Sandeep',
+  'PRIVE SALES OFFICE': 'Sandeep',
+  'PROMESA WESTEND': 'Prashant',
+  'PSF PLANT BHILOSA': 'Sandeep',
+  'RAJSHREE POLYPACK KACHIGAM - UNIT 3': 'Sandeep',
+  'RAJSHREE POLYPACK LTD (UNIT - II)': 'Sandeep',
+  'Registration office Worli': 'Sandeep',
+  'RESERVE SALES OFFICE': 'Sandeep',
+  'Reserve Society': 'Deepak M',
+  'Runwal Bliss Club house': 'Prashant',
+  'Runwal fifth Avenue': 'Prashant',
+  'RUNWAL FORESTS TOWERS CO-OP HOUSING LTD': 'Gauri',
+  'Runwal Garden Heights (BCAM)': 'Prashant',
+  'RUSTOMJEE AZZIANO CHS LTD': 'Deepak',
+  'Rustomjee Bandstand Project': 'Sandeep',
+  'RUSTOMJEE BELLA SALES': 'Sandeep',
+  'RUSTOMJEE BELLE-VIE KASARA SALES OFFICE': 'Sandeep',
+  'RUSTOMJEE CENTRAL PARK PREMISES CO-OP SOCIETY LTD': 'Gauri',
+  'RUSTOMJEE CLEON PMS': 'Deepak M',
+  'RUSTOMJEE ERIKA PMS': 'Prashant',
+  'Rustomjee Estoria wadala': 'Sandeep',
+  'Rustomjee GTB Nagar Project': 'Sandeep',
+  'RUSTOMJEE LA FAMILIA - SNAGGING': 'Sandeep',
+  'Rustomjee Yazarina 03': 'Gauri',
+  'SAGAR TARANG - VERSOVA': 'Sandeep',
+  'SANJAY HYDRAULIK PVT LTD': 'Sandeep',
+  'SEASONS SALES - PMS': 'Deepak M',
+  'SIMSON PHARMA LTD': 'Sandeep',
+  'Social Housing Project': 'Sandeep',
+  'STELLA PROJECT OFFICE': 'Sandeep',
+  'STELLA SALES OFFICE': 'Sandeep',
+  'SUMMIT (VALET)': 'Deepak M',
+  'SUMMIT SALES - PMS': 'Deepak M',
+  'TELE CALLER OFFICE': 'Sandeep',
+  'TEX 07 PLANT - BHILOSA': 'Sandeep',
+  'THE PALACIMO CO OP HSG SOCIETY LTD': 'Gauri',
+  'VERDANT VISTAS': 'Sandeep',
+  'Vista Bay Sales (Juliet House)': 'Sandeep',
+  'WaterFront Tower Private Limited': 'Prashant',
+  'WIPRO WATER -AIROLI': 'Sandeep',
+  'YAZARINA ONE CHS LIMITED - RUSTOMJEE': 'Gauri',
+  'ZINNIA': 'Gauri',
+  // ── alias variants for alternate email spellings ─────────
+  'LA FAMILIA POSSESSION OFFICE, A WING': 'Sandeep',
+  'MIRAJ CINEMAS': 'Sandeep',
+  'DHRUVWADI': 'Sandeep',
+  'PSF PLANT': 'Sandeep',
+  'TEX 07 PLANT': 'Sandeep',
+  'CK PLANT': 'Sandeep',
+  'CENTRAL PARK': 'Gauri',
+  'RUSTOMJEE CENTRAL PARK': 'Gauri',
+  'NAMAN PREMIER E-WING': 'Deepak'
 };
 
 // ════════════════════════════════════════════════════════════
@@ -327,10 +326,21 @@ var ACTIONS = {
 // ════════════════════════════════════════════════════════════
 // HELPERS
 // ════════════════════════════════════════════════════════════
-function gc(p){if(p===0)return'#791F1F';if(p<65)return'#E24B4A';if(p<75)return'#EF9F27';if(p<85)return'#F9CB42';return'#639922';}
+// Cap display pct at 100 — >100% means overtime/casuals which is valid
+// but status thresholds should use raw pct so 0% still shows zero
+function dispPct(p){ return Math.min(p, 100); }
+function gc(p){
+  var dp = dispPct(p);
+  if(p===0)return'#791F1F';
+  if(dp<65)return'#E24B4A';
+  if(dp<75)return'#EF9F27';
+  if(dp<85)return'#F9CB42';
+  return'#639922';
+}
 function gst(p){return p===0?'zero':p<65?'critical':p<75?'warning':p<85?'watch':'good';}
 function bl(s){return{zero:'bz',critical:'bc',warning:'bw',watch:'bwt',good:'bg'}[s]||'bg';}
 function sl(s){return{zero:'Zero',critical:'Critical',warning:'Warning',watch:'Watch',good:'Good'}[s]||s;}
+function fmtPct(p){ return dispPct(p)+'%'+(p>100?' ↑':''); }
 
 var chartInst = {};
 var liveData  = null;
@@ -339,13 +349,15 @@ var activeOps = 'Deepak';
 function getOps(name) {
   if (SITE_OPS_MAP[name]) return SITE_OPS_MAP[name];
   var lo = name.toLowerCase().trim();
-  for (var k in SITE_OPS_MAP) { if (k.toLowerCase().trim() === lo) return SITE_OPS_MAP[k]; }
+  for (var k in SITE_OPS_MAP) {
+    if (k.toLowerCase().trim() === lo) return SITE_OPS_MAP[k];
+  }
   return '';
 }
 
 // ════════════════════════════════════════════════════════════
 // DATA LOADING — reads from Apps Script Web App
-// Live Feed keys: ops_gauri_pct, ops_prashant_pct, etc.
+// Live Feed keys: ops_anumit_pct, ops_deepak_m_pct, etc.
 // ════════════════════════════════════════════════════════════
 function loadData() {
   document.getElementById('screen-loading').style.display = 'flex';
@@ -355,14 +367,14 @@ function loadData() {
     .then(function(kv){
       var data = {
         report_date    : kv['report_date'] || '',
-        overall_pct    : parseFloat(kv['overall_pct'])     || 0,
-        overall_present: parseInt(kv['overall_present'])   || 0,
-        overall_deploy : parseInt(kv['overall_deploy'])    || 0,
+        overall_pct    : parseFloat(kv['overall_pct'])   || 0,
+        overall_present: parseInt(kv['overall_present']) || 0,
+        overall_deploy : parseInt(kv['overall_deploy'])  || 0,
         ops: {}, sites: []
       };
       // Build per-ops data from Live Feed keys
-      // e.g. "Gauri" → key prefix "ops_gauri"
-      // e.g. "Deepak M" → key prefix "ops_deepak_m"
+      // "Anumit"   → ops_anumit_pct
+      // "Deepak M" → ops_deepak_m_pct
       OPS_NAMES.forEach(function(n){
         var p = 'ops_' + n.replace(/\s+/g,'_').toLowerCase();
         data.ops[n] = {
@@ -407,8 +419,9 @@ function renderDashboard(data) {
     ? new Date(data.report_date).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})
     : 'Today';
   var bar = '<div class="update-bar"><span>Report date: <b>' + dt +
-    '</b> &nbsp;·&nbsp; Overall: <b style="color:' + gc(data.overall_pct) + '">' + data.overall_pct +
-    '%</b> &nbsp;·&nbsp; ' + data.overall_present.toLocaleString() + ' / ' +
+    '</b> &nbsp;·&nbsp; Overall: <b style="color:' + gc(data.overall_pct) + '">' +
+    dispPct(data.overall_pct) + '%</b> &nbsp;·&nbsp; ' +
+    data.overall_present.toLocaleString() + ' / ' +
     data.overall_deploy.toLocaleString() + ' workers</span>' +
     '<span style="font-size:11px;color:#73726c">Auto-refreshes every ' + AUTO_REFRESH_MINUTES + ' min</span></div>';
   ['sc','lg','cp'].forEach(function(id){
@@ -436,7 +449,9 @@ function buildOpsPortfolio(data) {
     var op = data.ops[name] || {};
     port[name] = {
       name:name, sites:sites, total_sites:sites.length,
-      mtd_pct:op.pct||0, present:op.present||0, deploy:op.deploy||0,
+      mtd_pct: dispPct(op.pct||0),
+      raw_pct: op.pct||0,
+      present:op.present||0, deploy:op.deploy||0,
       zero:zero, critical:crit, warning:warn, watch:watch, good:good
     };
   });
@@ -448,17 +463,17 @@ function buildOpsPortfolio(data) {
 // ════════════════════════════════════════════════════════════
 function buildScorecards(data) {
   var port   = buildOpsPortfolio(data);
-  var sorted = OPS_NAMES.slice().sort(function(a,b){ return port[b].mtd_pct - port[a].mtd_pct; });
+  var sorted = OPS_NAMES.slice().sort(function(a,b){ return port[b].raw_pct - port[a].raw_pct; });
   var ranks  = ['1st','2nd','3rd','4th','5th','6th'];
 
   document.getElementById('sc-row').innerHTML = sorted.map(function(name,i){
     var o   = port[name];
     var key = name.replace(/'/g,"\\'");
     return '<div class="sc'+(name===activeOps?' selected':'')+
-      '" onclick="selectOps(\''+key+'\')" style="border-top-color:'+gc(o.mtd_pct)+'">' +
+      '" onclick="selectOps(\''+key+'\')" style="border-top-color:'+gc(o.raw_pct)+'">' +
       '<div class="rank">'+ranks[i]+'</div>' +
       '<div class="sc-name">'+name+'</div>' +
-      '<div class="big" style="color:'+gc(o.mtd_pct)+'">'+o.mtd_pct+'%</div>' +
+      '<div class="big" style="color:'+gc(o.raw_pct)+'">'+o.mtd_pct+'%</div>' +
       '<div class="meta">'+o.total_sites+' sites &nbsp;·&nbsp; '+o.present+'/'+o.deploy+'</div>' +
       '<div class="site-pills">' +
         (o.zero    ?'<span class="sp" style="background:#F7C1C1;color:#791F1F">'+o.zero+' zero</span>':'') +
@@ -493,7 +508,7 @@ function buildPanel(name, o) {
       '<span class="ab-count">'+arr.length+' site'+(arr.length>1?'s':'')+'</span></div>' +
       '<ul class="action-list">'+info.steps.map(function(a){return'<li>'+a+'</li>';}).join('')+'</ul>' +
       '<div class="site-chips">'+arr.sort(function(a,b){return a.pct-b.pct;}).map(function(s){
-        return '<span class="chip chip-'+k+'"><span class="chip-pct">'+s.pct+'%</span>'+s.site+'</span>';
+        return '<span class="chip chip-'+k+'"><span class="chip-pct">'+fmtPct(s.pct)+'</span>'+s.site+'</span>';
       }).join('')+'</div></div>';
   }
 
@@ -502,7 +517,7 @@ function buildPanel(name, o) {
       '<div><div class="ph-name">'+name+'</div>' +
       '<div class="ph-sub">Operations Manager &nbsp;·&nbsp; '+o.total_sites+' sites</div></div>' +
       '<div class="ph-stats">' +
-        '<div class="ph-stat"><div class="lbl">Attendance</div><div class="val" style="color:'+gc(o.mtd_pct)+'">'+o.mtd_pct+'%</div></div>' +
+        '<div class="ph-stat"><div class="lbl">Attendance</div><div class="val" style="color:'+gc(o.raw_pct)+'">'+o.mtd_pct+'%</div></div>' +
         '<div class="ph-stat"><div class="lbl">Present</div><div class="val">'+o.present+'</div></div>' +
         '<div class="ph-stat"><div class="lbl">Sites needing action</div>' +
           '<div class="val" style="color:'+(noAct?'#3B6D11':'#E24B4A')+'">'+(zero.length+crit.length+warn.length+watch.length)+'</div></div>' +
@@ -521,13 +536,14 @@ function buildPanel(name, o) {
       '</tr></thead><tbody>' +
       o.sites.slice().sort(function(a,b){return a.pct-b.pct;}).map(function(s,i){
         var st = gst(s.pct);
+        var dp = dispPct(s.pct);
         return '<tr>' +
           '<td style="color:#73726c">'+(i+1)+'</td>' +
           '<td style="font-weight:500;max-width:240px;word-break:break-word">'+s.site+'</td>' +
           '<td style="text-align:right">'+s.present+'</td>' +
           '<td style="text-align:right">'+s.deploy+'</td>' +
-          '<td style="font-weight:800;color:'+gc(s.pct)+';text-align:right">'+s.pct+'%</td>' +
-          '<td><div class="bar-w"><div class="bar"><div class="bar-f" style="width:'+Math.min(s.pct,100)+'%;background:'+gc(s.pct)+'"></div></div></div></td>' +
+          '<td style="font-weight:800;color:'+gc(s.pct)+';text-align:right">'+fmtPct(s.pct)+'</td>' +
+          '<td><div class="bar-w"><div class="bar"><div class="bar-f" style="width:'+Math.min(dp,100)+'%;background:'+gc(s.pct)+'"></div></div></div></td>' +
           '<td><span class="badge '+bl(st)+'">'+sl(st)+'</span></td>' +
         '</tr>';
       }).join('') +
@@ -538,7 +554,7 @@ function selectOps(name, doScroll) {
   activeOps = name;
   document.querySelectorAll('.sc').forEach(function(el){ el.classList.remove('selected'); });
   var port   = buildOpsPortfolio(liveData);
-  var sorted = OPS_NAMES.slice().sort(function(a,b){ return port[b].mtd_pct - port[a].mtd_pct; });
+  var sorted = OPS_NAMES.slice().sort(function(a,b){ return port[b].raw_pct - port[a].raw_pct; });
   var cards  = document.querySelectorAll('.sc');
   var idx    = sorted.indexOf(name);
   if (cards[idx]) cards[idx].classList.add('selected');
@@ -585,7 +601,7 @@ function buildPanelCharts(name, o) {
 // ════════════════════════════════════════════════════════════
 function buildLeague(data) {
   var port   = buildOpsPortfolio(data);
-  var sorted = OPS_NAMES.slice().sort(function(a,b){ return port[b].mtd_pct - port[a].mtd_pct; });
+  var sorted = OPS_NAMES.slice().sort(function(a,b){ return port[b].raw_pct - port[a].raw_pct; });
   document.getElementById('league-rows').innerHTML = sorted.map(function(name,i){
     var o = port[name];
     function seg(n,c){ return n?'<div class="lr-seg" style="flex:'+n+';background:'+c+'"></div>':''; }
@@ -603,7 +619,7 @@ function buildLeague(data) {
           '<span style="color:#3B6D11;font-weight:700">'+o.good+' good</span>' +
         '</div>' +
       '</div>' +
-      '<div><div class="lr-pct" style="color:'+gc(o.mtd_pct)+'">'+o.mtd_pct+'%</div><div class="lr-sub">attendance</div></div>' +
+      '<div><div class="lr-pct" style="color:'+gc(o.raw_pct)+'">'+o.mtd_pct+'%</div><div class="lr-sub">attendance</div></div>' +
     '</div>';
   }).join('');
   if (chartInst['all-trend']) chartInst['all-trend'].destroy();
@@ -612,7 +628,7 @@ function buildLeague(data) {
     data:{labels:OPS_NAMES,
       datasets:[{label:'Attendance %',
         data:OPS_NAMES.map(function(n){return port[n].mtd_pct;}),
-        backgroundColor:OPS_NAMES.map(function(n){return gc(port[n].mtd_pct);}),borderRadius:5}]},
+        backgroundColor:OPS_NAMES.map(function(n){return gc(port[n].raw_pct);}),borderRadius:5}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{y:{min:60,max:100,ticks:{callback:function(v){return v+'%';},font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'}},
               x:{ticks:{font:{size:11}},grid:{display:false}}}}
@@ -624,14 +640,14 @@ function buildLeague(data) {
 // ════════════════════════════════════════════════════════════
 function buildCompare(data) {
   var port   = buildOpsPortfolio(data);
-  var sorted = OPS_NAMES.slice().sort(function(a,b){ return port[b].mtd_pct - port[a].mtd_pct; });
+  var sorted = OPS_NAMES.slice().sort(function(a,b){ return port[b].raw_pct - port[a].raw_pct; });
 
   document.getElementById('compare-cards').innerHTML = sorted.map(function(name){
     var o = port[name];
     return '<div class="cg">' +
       '<div class="cg-name">'+name+'</div>' +
-      '<div class="cg-big" style="color:'+gc(o.mtd_pct)+'">'+o.mtd_pct+'%</div>' +
-      '<div class="cg-bar"><div class="cg-fill" style="width:'+o.mtd_pct+'%;background:'+gc(o.mtd_pct)+'"></div></div>' +
+      '<div class="cg-big" style="color:'+gc(o.raw_pct)+'">'+o.mtd_pct+'%</div>' +
+      '<div class="cg-bar"><div class="cg-fill" style="width:'+o.mtd_pct+'%;background:'+gc(o.raw_pct)+'"></div></div>' +
       '<div class="cg-breakdown">' +
         '<div class="cg-b" style="background:#FCEBEB;color:#A32D2D">'+(o.zero+o.critical)+' critical</div>' +
         '<div class="cg-b" style="background:#FAEEDA;color:#854F0B">'+o.warning+' warning</div>' +
@@ -664,7 +680,7 @@ function buildCompare(data) {
       html += '<tr>' +
         '<td style="font-weight:700;white-space:nowrap">'+(i===0?name:'')+'</td>' +
         '<td style="max-width:220px;word-break:break-word;font-weight:500">'+s.site+'</td>' +
-        '<td style="font-weight:800;color:'+gc(s.pct)+'">'+s.pct+'%</td>' +
+        '<td style="font-weight:800;color:'+gc(s.pct)+'">'+fmtPct(s.pct)+'</td>' +
         '<td><span class="badge '+bl(st)+'">'+sl(st)+'</span></td>' +
         '<td style="font-size:11px;color:#444">'+info.steps[0]+'</td>' +
       '</tr>';
@@ -709,6 +725,3 @@ if (!sessionStorage.getItem("crest_auth")) {
 </script>
 </body>
 </html>
-
-
-
